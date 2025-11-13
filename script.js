@@ -86,6 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     calcToggleBtn.addEventListener('click', () => {
         calcPanel.classList.toggle('active');
+        if (calcPanel.classList.contains('active')) {
+            // Close drawing panel if open
+            const drawPanel = document.getElementById('draw-panel');
+            if (drawPanel) {
+                drawPanel.classList.remove('active');
+            }
+        }
     });
     
     calcCloseBtn.addEventListener('click', () => {

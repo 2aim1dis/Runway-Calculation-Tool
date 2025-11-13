@@ -278,6 +278,34 @@ document.addEventListener('DOMContentLoaded', () => {
             // Remove tile from SVG
             tile.remove();
         });
+        
+        // Right click to rotate tile 90 degrees clockwise
+        tile.addEventListener('contextmenu', (e) => {
+            e.preventDefault(); // Prevent browser context menu
+            
+            // Get current dimensions
+            const currentWidth = parseFloat(tile.getAttribute('width'));
+            const currentHeight = parseFloat(tile.getAttribute('height'));
+            const currentX = parseFloat(tile.getAttribute('x'));
+            const currentY = parseFloat(tile.getAttribute('y'));
+            
+            // Swap width and height for 90-degree rotation
+            tile.setAttribute('width', currentHeight);
+            tile.setAttribute('height', currentWidth);
+            
+            // Adjust position to keep tile centered after rotation
+            // Calculate center point before rotation
+            const centerX = currentX + currentWidth / 2;
+            const centerY = currentY + currentHeight / 2;
+            
+            // Calculate new top-left position to maintain center
+            const newX = centerX - currentHeight / 2;
+            const newY = centerY - currentWidth / 2;
+            
+            // Snap to grid
+            tile.setAttribute('x', Math.round(newX / 50) * 50);
+            tile.setAttribute('y', Math.round(newY / 50) * 50);
+        });
     }
     
     const runwayShape = document.getElementById('runway-shape');

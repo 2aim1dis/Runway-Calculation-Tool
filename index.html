@@ -8,69 +8,139 @@
 </head>
 <body>
     <div class="container">
-        <svg id="runway-svg" viewBox="-1000 -500 2000 1000" xmlns="http://www.w3.org/2000/svg">
-            <!-- Grey background rectangle (200cm x 100cm) -->
-            <rect id="background-rect" x="-1000" y="-500" width="2000" height="1000" />
+        <svg id="runway-svg" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+            <!-- Grid lines (50cm x 50cm = 50 units) -->
+            <defs>
+                <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                    <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#ddd" stroke-width="1"/>
+                </pattern>
+            </defs>
             
-            <!-- Lines from DXF (Y-flipped) -->
-            <g class="runway-lines" transform="scale(1, -1)">
-                <line x1="204.738" y1="359.122" x2="300.001" y2="304.122" />
-                <line x1="182.908" y1="331.311" x2="197.908" y2="357.292" />
-                <line x1="160.971" y1="338.204" x2="176.078" y2="329.481" />
-                <line x1="101.286" y1="338.800" x2="0.500" y2="338.800" />
-                <line x1="0.500" y1="500.000" x2="0.500" y2="338.800" />
-                <line x1="0.500" y1="500.000" x2="1000.000" y2="500.000" />
-                <line x1="1000.000" y1="500.000" x2="1000.000" y2="-500.000" />
-                <line x1="0.500" y1="-500.000" x2="1000.000" y2="-500.000" />
-                <line x1="0.500" y1="-338.800" x2="0.500" y2="-500.000" />
-                <line x1="0.500" y1="-338.800" x2="101.286" y2="-338.800" />
-                <line x1="160.845" y1="-338.266" x2="161.098" y2="-338.130" />
-                <line x1="161.098" y1="-338.130" x2="596.000" y2="-87.039" />
-                <line x1="596.000" y1="-87.039" x2="596.000" y2="-34.062" />
-                <line x1="596.000" y1="87.039" x2="596.000" y2="34.062" />
-                <line x1="288.661" y1="264.481" x2="596.000" y2="87.039" />
-                <line x1="301.831" y1="297.292" x2="286.831" y2="271.311" />
-                <line x1="-204.738" y1="359.122" x2="-300.001" y2="304.122" />
-                <line x1="-301.831" y1="297.292" x2="-286.831" y2="271.311" />
-                <line x1="-288.661" y1="264.481" x2="-596.000" y2="87.039" />
-                <line x1="-596.000" y1="87.039" x2="-596.000" y2="34.062" />
-                <line x1="-596.000" y1="-87.039" x2="-596.000" y2="-34.062" />
-                <line x1="-596.000" y1="-87.039" x2="-160.971" y2="-338.204" />
-                <line x1="-101.286" y1="-338.800" x2="-0.500" y2="-338.800" />
-                <line x1="-0.500" y1="-338.800" x2="-0.500" y2="-500.000" />
-                <line x1="-1000.000" y1="-500.000" x2="-0.500" y2="-500.000" />
-                <line x1="-1000.000" y1="500.000" x2="-1000.000" y2="-500.000" />
-                <line x1="-0.500" y1="500.000" x2="-1000.000" y2="500.000" />
-                <line x1="-0.500" y1="500.000" x2="-0.500" y2="338.800" />
-                <line x1="-0.500" y1="338.800" x2="-101.286" y2="338.800" />
-                <line x1="-160.971" y1="338.204" x2="-176.078" y2="329.481" />
-                <line x1="-182.908" y1="331.311" x2="-197.908" y2="357.292" />
-                <path d="M 301.831,297.292 A 5.000,5.000 0 0,1 300.001,304.122" />
-                <path d="M 204.738,359.122 A 5.000,5.000 0 0,1 197.908,357.292" />
-                <path d="M 176.078,329.481 A 5.000,5.000 0 0,1 182.908,331.311" />
-                <path d="M 147.174,348.333 A 50.622,50.622 0 0,1 160.971,338.204" />
-                <path d="M 147.174,348.333 A 15.500,15.500 0 0,1 122.226,348.064" />
-                <path d="M 101.286,338.800 A 45.269,45.269 0 0,1 122.226,348.064" />
-                <path d="M 122.226,-348.064 A 45.269,45.269 0 0,1 101.286,-338.800" />
-                <path d="M 122.226,-348.064 A 15.500,15.500 0 0,1 147.174,-348.333" />
-                <path d="M 160.845,-338.266 A 50.622,50.622 0 0,1 147.174,-348.333" />
-                <path d="M 603.810,-8.727 A 45.000,45.000 0 0,1 596.000,-34.062" />
-                <path d="M 603.810,-8.727 A 15.500,15.500 0 0,1 603.810,8.727" />
-                <path d="M 596.000,34.062 A 45.000,45.000 0 0,1 603.810,8.727" />
-                <path d="M 286.831,271.311 A 5.000,5.000 0 0,1 288.661,264.481" />
-                <path d="M -197.908,357.292 A 5.000,5.000 0 0,1 -204.738,359.122" />
-                <path d="M -300.001,304.122 A 5.000,5.000 0 0,1 -301.831,297.292" />
-                <path d="M -288.661,264.481 A 5.000,5.000 0 0,1 -286.831,271.311" />
-                <path d="M -603.810,8.727 A 45.000,45.000 0 0,1 -596.000,34.062" />
-                <path d="M -603.810,8.727 A 15.500,15.500 0 0,1 -603.810,-8.727" />
-                <path d="M -596.000,-34.062 A 45.000,45.000 0 0,1 -603.810,-8.727" />
-                <path d="M -147.174,-348.333 A 50.622,50.622 0 0,1 -160.971,-338.204" />
-                <path d="M -147.174,-348.333 A 15.500,15.500 0 0,1 -122.226,-348.064" />
-                <path d="M -101.286,-338.800 A 45.269,45.269 0 0,1 -122.226,-348.064" />
-                <path d="M -122.226,348.064 A 45.269,45.269 0 0,1 -101.286,338.800" />
-                <path d="M -122.226,348.064 A 15.500,15.500 0 0,1 -147.174,348.333" />
-                <path d="M -160.971,338.204 A 50.622,50.622 0 0,1 -147.174,348.333" />
-                <path d="M -1.320,6.211 A 6.350,6.350 0 0,0 -1.320,6.211" />
+            <!-- Apply grid pattern -->
+            <rect width="100%" height="100%" fill="white"/>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+            
+            <!-- Runway shape from DXF (centered and Y-flipped) -->
+            <g transform="translate(500, 500) scale(0.1, -0.1)">
+                <line x1="204.738" y1="359.122" x2="300.001" y2="304.122" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="182.908" y1="331.311" x2="197.908" y2="357.292" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="160.971" y1="338.204" x2="176.078" y2="329.481" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="101.286" y1="338.800" x2="0.500" y2="338.800" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="0.500" y1="500.000" x2="0.500" y2="338.800" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="0.500" y1="500.000" x2="1000.000" y2="500.000" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="1000.000" y1="500.000" x2="1000.000" y2="-500.000" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="0.500" y1="-500.000" x2="1000.000" y2="-500.000" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="0.500" y1="-338.800" x2="0.500" y2="-500.000" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="0.500" y1="-338.800" x2="101.286" y2="-338.800" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="160.845" y1="-338.266" x2="161.098" y2="-338.130" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="161.098" y1="-338.130" x2="596.000" y2="-87.039" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="596.000" y1="-87.039" x2="596.000" y2="-34.062" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="596.000" y1="87.039" x2="596.000" y2="34.062" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="288.661" y1="264.481" x2="596.000" y2="87.039" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="301.831" y1="297.292" x2="286.831" y2="271.311" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-204.738" y1="359.122" x2="-300.001" y2="304.122" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-301.831" y1="297.292" x2="-286.831" y2="271.311" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-288.661" y1="264.481" x2="-596.000" y2="87.039" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-596.000" y1="87.039" x2="-596.000" y2="34.062" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-596.000" y1="-87.039" x2="-596.000" y2="-34.062" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-596.000" y1="-87.039" x2="-160.971" y2="-338.204" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-101.286" y1="-338.800" x2="-0.500" y2="-338.800" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-0.500" y1="-338.800" x2="-0.500" y2="-500.000" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-1000.000" y1="-500.000" x2="-0.500" y2="-500.000" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-1000.000" y1="500.000" x2="-1000.000" y2="-500.000" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-0.500" y1="500.000" x2="-1000.000" y2="500.000" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-0.500" y1="500.000" x2="-0.500" y2="338.800" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-0.500" y1="338.800" x2="-101.286" y2="338.800" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-160.971" y1="338.204" x2="-176.078" y2="329.481" stroke="#2c3e50" stroke-width="2"/>
+                <line x1="-182.908" y1="331.311" x2="-197.908" y2="357.292" stroke="#2c3e50" stroke-width="2"/>
+                <path d="M 301.831,297.292 A 5.000,5.000 0 0,1 300.001,304.122" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 204.738,359.122 A 5.000,5.000 0 0,1 197.908,357.292" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 176.078,329.481 A 5.000,5.000 0 0,1 182.908,331.311" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 147.174,348.333 A 50.622,50.622 0 0,1 160.971,338.204" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 147.174,348.333 A 15.500,15.500 0 0,1 122.226,348.064" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 101.286,338.800 A 45.269,45.269 0 0,1 122.226,348.064" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 122.226,-348.064 A 45.269,45.269 0 0,1 101.286,-338.800" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 122.226,-348.064 A 15.500,15.500 0 0,1 147.174,-348.333" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 160.845,-338.266 A 50.622,50.622 0 0,1 147.174,-348.333" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 603.810,-8.727 A 45.000,45.000 0 0,1 596.000,-34.062" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 603.810,-8.727 A 15.500,15.500 0 0,1 603.810,8.727" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 596.000,34.062 A 45.000,45.000 0 0,1 603.810,8.727" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M 286.831,271.311 A 5.000,5.000 0 0,1 288.661,264.481" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -197.908,357.292 A 5.000,5.000 0 0,1 -204.738,359.122" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -300.001,304.122 A 5.000,5.000 0 0,1 -301.831,297.292" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -288.661,264.481 A 5.000,5.000 0 0,1 -286.831,271.311" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -603.810,8.727 A 45.000,45.000 0 0,1 -596.000,34.062" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -603.810,8.727 A 15.500,15.500 0 0,1 -603.810,-8.727" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -596.000,-34.062 A 45.000,45.000 0 0,1 -603.810,-8.727" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -147.174,-348.333 A 50.622,50.622 0 0,1 -160.971,-338.204" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -147.174,-348.333 A 15.500,15.500 0 0,1 -122.226,-348.064" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -101.286,-338.800 A 45.269,45.269 0 0,1 -122.226,-348.064" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -122.226,348.064 A 45.269,45.269 0 0,1 -101.286,338.800" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -122.226,348.064 A 15.500,15.500 0 0,1 -147.174,348.333" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -160.971,338.204 A 50.622,50.622 0 0,1 -147.174,348.333" stroke="#2c3e50" stroke-width="2" fill="none"/>
+                <path d="M -1.320,6.211 A 6.350,6.350 0 0,0 -1.320,6.211" stroke="#2c3e50" stroke-width="2" fill="none"/>
+            </g>
+        </svg>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+            <!-- Top row - 4 tiles (60cm section) -->
+            <rect class="tile-black" x="0" y="0" width="100" height="100" />
+            <rect class="tile-black" x="100" y="0" width="100" height="100" />
+            <rect class="tile-black" x="200" y="0" width="100" height="100" />
+            <rect class="tile-black" x="300" y="0" width="100" height="100" />
+            
+            <!-- Second row - partial left + 4 tiles -->
+            <rect class="tile-black" x="-50" y="100" width="50" height="100" />
+            <rect class="tile-black" x="0" y="100" width="100" height="100" />
+            <rect class="tile-black" x="100" y="100" width="100" height="100" />
+            <rect class="tile-black" x="200" y="100" width="100" height="100" />
+            <rect class="tile-black" x="300" y="100" width="100" height="100" />
+            
+            <!-- Third row - 2 left tiles + white center + 2 right tiles -->
+            <rect class="tile-black" x="-50" y="200" width="50" height="100" />
+            <rect class="tile-black" x="0" y="200" width="100" height="100" />
+            
+            <!-- White/empty center rectangle (100cm x 100cm) -->
+            <rect class="tile-white" x="100" y="200" width="100" height="100" />
+            
+            <rect class="tile-black" x="200" y="200" width="100" height="100" />
+            <rect class="tile-black" x="300" y="200" width="100" height="100" />
+            
+            <!-- Bottom vertical column - 7 tiles (700cm) -->
+            <rect class="tile-black" x="100" y="300" width="100" height="100" />
+            <rect class="tile-black" x="100" y="400" width="100" height="100" />
+            <rect class="tile-black" x="100" y="500" width="100" height="100" />
+            <rect class="tile-black" x="100" y="600" width="100" height="100" />
+            <rect class="tile-black" x="100" y="700" width="100" height="100" />
+            <rect class="tile-black" x="100" y="800" width="100" height="100" />
+            <rect class="tile-black" x="100" y="900" width="100" height="100" />
+            
+            <!-- Dimension labels -->
+            <text x="200" y="-10" text-anchor="middle" font-size="12" fill="#666">60cm</text>
+            <text x="-80" y="150" text-anchor="middle" font-size="12" fill="#666" transform="rotate(-90 -80 150)">100cm</text>
+            <text x="150" y="920" text-anchor="middle" font-size="12" fill="#666">100cm</text>
+            <text x="70" y="600" text-anchor="middle" font-size="12" fill="#666" transform="rotate(-90 70 600)">700cm</text>
+            
+            <!-- Grid lines to show tile boundaries -->
+            <g class="grid-lines" stroke="#333" stroke-width="1" fill="none">
+                <!-- Horizontal lines -->
+                <line x1="-50" y1="100" x2="400" y2="100" />
+                <line x1="-50" y1="200" x2="400" y2="200" />
+                <line x1="-50" y1="300" x2="400" y2="300" />
+                <line x1="100" y1="400" x2="200" y2="400" />
+                <line x1="100" y1="500" x2="200" y2="500" />
+                <line x1="100" y1="600" x2="200" y2="600" />
+                <line x1="100" y1="700" x2="200" y2="700" />
+                <line x1="100" y1="800" x2="200" y2="800" />
+                <line x1="100" y1="900" x2="200" y2="900" />
+                
+                <!-- Vertical lines -->
+                <line x1="0" y1="0" x2="0" y2="300" />
+                <line x1="100" y1="0" x2="100" y2="1000" />
+                <line x1="200" y1="0" x2="200" y2="1000" />
+                <line x1="300" y1="0" x2="300" y2="300" />
             </g>
         </svg>
     </div>

@@ -22,18 +22,7 @@ body {
 }
 
 #runway-svg {
-    width: 200cm;
-    height: 100cm;
     max-width: 90vw;
     max-height: 90vh;
-}
-
-#background-rect {
-    fill: #cccccc;
-}
-
-.runway-lines {
-    stroke: #2c3e50;
-    stroke-width: 2;
-    fill: none;
+    border: 1px solid #ddd;
 }

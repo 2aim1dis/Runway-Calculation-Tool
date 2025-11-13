@@ -119,6 +119,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const paletteTiles = document.querySelectorAll('.palette-tile');
     let draggedTileData = null;
     
+    // Inventory tracking
+    const inventory = {};
+    
+    function updateInventory() {
+        const inventoryBody = document.getElementById('inventory-body');
+        inventoryBody.innerHTML = '';
+        
+        // Always show the runway
+        const runwayRow = document.createElement('tr');
+        runwayRow.innerHTML = `
+            <td>3D Deltas precut tiles</td>
+            <td class="count-cell">1</td>
+        `;
+        inventoryBody.appendChild(runwayRow);
+        
+        // Add dropped tiles
+        Object.keys(inventory).forEach(key => {
+            if (inventory[key] > 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${key}</td>
+                    <td class="count-cell">${inventory[key]}</td>
+                `;
+                inventoryBody.appendChild(row);
+            }
+        });
+    }
+    
     // Handle drag start from palette
     paletteTiles.forEach(tile => {
         tile.addEventListener('dragstart', (e) => {
@@ -167,6 +195,17 @@ document.addEventListener('DOMContentLoaded', () => {
         newTile.setAttribute('stroke-width', '2');
         newTile.setAttribute('class', 'dropped-tile');
         newTile.style.cursor = 'move';
+        
+        // Store tile info for inventory
+        const tileName = `${draggedTileData.width}cm × ${draggedTileData.height}cm Tile`;
+        newTile.setAttribute('data-tile-name', tileName);
+        
+        // Update inventory
+        if (!inventory[tileName]) {
+            inventory[tileName] = 0;
+        }
+        inventory[tileName]++;
+        updateInventory();
         
         // Make dropped tiles draggable
         makeTileDraggable(newTile);
@@ -220,6 +259,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Double click to delete
         tile.addEventListener('dblclick', () => {
+            // Update inventory before removing
+            const tileName = tile.getAttribute('data-tile-name');
+            if (tileName && inventory[tileName]) {
+                inventory[tileName]--;
+                if (inventory[tileName] <= 0) {
+                    delete inventory[tileName];
+                }
+                updateInventory();
+            }
             tile.remove();
         });
     }

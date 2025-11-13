@@ -123,6 +123,384 @@ document.addEventListener('DOMContentLoaded', () => {
         calcResult.className = `calc-result ${type}`;
     }
     
+    // Drawing Tool functionality
+    const drawToggleBtn = document.getElementById('draw-toggle-btn');
+    const drawPanel = document.getElementById('draw-panel');
+    const drawCloseBtn = document.getElementById('draw-close-btn');
+    const startDrawingBtn = document.getElementById('start-drawing-btn');
+    const cancelDrawingBtn = document.getElementById('cancel-drawing-btn');
+    const fillShapeBtn = document.getElementById('fill-shape-btn');
+    const drawUseRampsCheckbox = document.getElementById('draw-use-ramps');
+    const drawResult = document.getElementById('draw-result');
+    
+    let isDrawing = false;
+    let isFreeDrawing = false;
+    let drawPoints = [];
+    let drawPolygon = null;
+    let drawPointMarkers = [];
+    
+    drawToggleBtn.addEventListener('click', () => {
+        drawPanel.classList.toggle('active');
+        if (drawPanel.classList.contains('active')) {
+            calcPanel.classList.remove('active'); // Close calculator panel
+        }
+    });
+    
+    drawCloseBtn.addEventListener('click', () => {
+        drawPanel.classList.remove('active');
+        cancelDrawing();
+    });
+    
+    startDrawingBtn.addEventListener('click', () => {
+        startDrawing();
+    });
+    
+    cancelDrawingBtn.addEventListener('click', () => {
+        cancelDrawing();
+    });
+    
+    fillShapeBtn.addEventListener('click', () => {
+        fillDrawnShape();
+    });
+    
+    function startDrawing() {
+        isDrawing = true;
+        isFreeDrawing = false;
+        drawPoints = [];
+        drawPointMarkers = [];
+        
+        startDrawingBtn.style.display = 'none';
+        cancelDrawingBtn.style.display = 'block';
+        fillShapeBtn.style.display = 'none';
+        
+        showDrawResult('Click and drag to draw. Release to finish the shape.', 'info');
+        
+        // Change cursor to crosshair
+        svg.style.cursor = 'crosshair';
+    }
+    
+    function cancelDrawing() {
+        isDrawing = false;
+        drawPoints = [];
+        
+        // Remove polygon and markers
+        if (drawPolygon) {
+            drawPolygon.remove();
+            drawPolygon = null;
+        }
+        drawPointMarkers.forEach(marker => marker.remove());
+        drawPointMarkers = [];
+        
+        startDrawingBtn.style.display = 'block';
+        cancelDrawingBtn.style.display = 'none';
+        fillShapeBtn.style.display = 'none';
+        
+        svg.style.cursor = 'grab';
+        drawResult.style.display = 'none';
+    }
+    
+    function showDrawResult(message, type) {
+        drawResult.textContent = message;
+        drawResult.className = `calc-result ${type}`;
+    }
+    
+    // Handle mouse events for free drawing on SVG
+    svg.addEventListener('mousedown', (e) => {
+        if (!isDrawing || isFreeDrawing) return;
+        
+        // Prevent default dragging behavior
+        e.preventDefault();
+        
+        isFreeDrawing = true;
+        drawPoints = [];
+        drawPointMarkers = [];
+        
+        // Get starting point
+        const svgRect = svg.getBoundingClientRect();
+        const viewBox = svg.viewBox.baseVal;
+        const x = (e.clientX - svgRect.left) / svgRect.width * viewBox.width + viewBox.x;
+        const y = (e.clientY - svgRect.top) / svgRect.height * viewBox.height + viewBox.y;
+        
+        // Snap to 50cm grid
+        const snappedX = Math.round(x / 50) * 50;
+        const snappedY = Math.round(y / 50) * 50;
+        
+        drawPoints.push({ x: snappedX, y: snappedY });
+        
+        showDrawResult('Keep dragging to draw your shape...', 'info');
+    });
+    
+    svg.addEventListener('mousemove', (e) => {
+        if (!isFreeDrawing) return;
+        
+        // Get current point
+        const svgRect = svg.getBoundingClientRect();
+        const viewBox = svg.viewBox.baseVal;
+        const x = (e.clientX - svgRect.left) / svgRect.width * viewBox.width + viewBox.x;
+        const y = (e.clientY - svgRect.top) / svgRect.height * viewBox.height + viewBox.y;
+        
+        // Snap to 50cm grid
+        const snappedX = Math.round(x / 50) * 50;
+        const snappedY = Math.round(y / 50) * 50;
+        
+        // Only add point if it's different from the last one (avoid duplicates)
+        const lastPoint = drawPoints[drawPoints.length - 1];
+        if (!lastPoint || lastPoint.x !== snappedX || lastPoint.y !== snappedY) {
+            drawPoints.push({ x: snappedX, y: snappedY });
+            updateDrawPolygon();
+        }
+    });
+    
+    svg.addEventListener('mouseup', (e) => {
+        if (!isFreeDrawing) return;
+        
+        isFreeDrawing = false;
+        
+        // Automatically close the shape by connecting to first point
+        if (drawPoints.length >= 3) {
+            closeShape();
+        } else {
+            showDrawResult('Shape too small. Please draw a larger area.', 'error');
+            cancelDrawing();
+        }
+    });
+    
+    function updateDrawPolygon() {
+        if (drawPoints.length < 2) return;
+        
+        // Remove existing polygon
+        if (drawPolygon) {
+            drawPolygon.remove();
+        }
+        
+        // Create new polyline (not closed yet while drawing)
+        const points = drawPoints.map(p => `${p.x},${p.y}`).join(' ');
+        
+        if (isFreeDrawing) {
+            // Show as polyline while drawing
+            drawPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            drawPolygon.setAttribute('points', points);
+            drawPolygon.setAttribute('fill', 'none');
+            drawPolygon.setAttribute('stroke', '#4a90e2');
+            drawPolygon.setAttribute('stroke-width', '3');
+            drawPolygon.setAttribute('class', 'draw-polygon');
+        } else {
+            // Show as closed polygon
+            drawPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            drawPolygon.setAttribute('points', points);
+            drawPolygon.setAttribute('fill', '#4a90e2');
+            drawPolygon.setAttribute('fill-opacity', '0.2');
+            drawPolygon.setAttribute('stroke', '#4a90e2');
+            drawPolygon.setAttribute('stroke-width', '3');
+            drawPolygon.setAttribute('stroke-dasharray', '10,5');
+            drawPolygon.setAttribute('class', 'draw-polygon');
+        }
+        
+        svg.appendChild(drawPolygon);
+    }
+    
+    function closeShape() {
+        if (drawPoints.length < 3) {
+            showDrawResult('Need at least 3 points to create a shape!', 'error');
+            return;
+        }
+        
+        isDrawing = false;
+        isFreeDrawing = false;
+        
+        // Remove the polyline and create closed polygon
+        if (drawPolygon) {
+            drawPolygon.remove();
+        }
+        
+        // Create closed polygon connecting last point to first point
+        const points = drawPoints.map(p => `${p.x},${p.y}`).join(' ');
+        drawPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        drawPolygon.setAttribute('points', points);
+        drawPolygon.setAttribute('fill', '#4a90e2');
+        drawPolygon.setAttribute('fill-opacity', '0.3');
+        drawPolygon.setAttribute('stroke', '#4a90e2');
+        drawPolygon.setAttribute('stroke-width', '3');
+        drawPolygon.setAttribute('class', 'draw-polygon');
+        svg.appendChild(drawPolygon);
+        
+        cancelDrawingBtn.style.display = 'none';
+        fillShapeBtn.style.display = 'block';
+        
+        svg.style.cursor = 'grab';
+        showDrawResult(`Shape closed with ${drawPoints.length} points. Click "Fill Shape with Tiles" to continue.`, 'success');
+    }
+    
+    function fillDrawnShape() {
+        const useRamps = drawUseRampsCheckbox.checked;
+        
+        // Remove the drawing polygon and markers
+        if (drawPolygon) {
+            drawPolygon.remove();
+            drawPolygon = null;
+        }
+        drawPointMarkers.forEach(marker => marker.remove());
+        drawPointMarkers = [];
+        
+        // Fill the shape with tiles
+        const result = fillPolygonWithTiles(drawPoints, useRamps);
+        
+        if (result.success) {
+            showDrawResult(
+                `Successfully filled shape with ${result.tilesPlaced} tiles covering ${result.areaCovered.toFixed(2)} m²`,
+                'success'
+            );
+            
+            // Reset drawing state
+            drawPoints = [];
+            fillShapeBtn.style.display = 'none';
+            startDrawingBtn.style.display = 'block';
+            
+            // Close panel after short delay
+            setTimeout(() => {
+                drawPanel.classList.remove('active');
+            }, 2000);
+        } else {
+            showDrawResult(result.message || 'Error filling shape', 'error');
+        }
+    }
+    
+    /**
+     * Fill a custom polygon with tiles
+     */
+    function fillPolygonWithTiles(polygonPoints, useRamps) {
+        if (!polygonPoints || polygonPoints.length < 3) {
+            return { success: false, message: 'Invalid polygon' };
+        }
+        
+        // Calculate bounding box
+        const minX = Math.min(...polygonPoints.map(p => p.x));
+        const maxX = Math.max(...polygonPoints.map(p => p.x));
+        const minY = Math.min(...polygonPoints.map(p => p.y));
+        const maxY = Math.max(...polygonPoints.map(p => p.y));
+        
+        let tilesPlaced = 0;
+        let currentArea = 0;
+        const tileArea = 5000; // 0.5 m²
+        const rampArea = 2500; // 0.25 m²
+        
+        // First, fill interior with regular tiles
+        for (let y = minY; y <= maxY; y += 50) {
+            for (let x = minX; x <= maxX; x += 50) {
+                // Try horizontal tile first
+                let tileWidth = 100;
+                let tileHeight = 50;
+                
+                // Check if tile center is inside polygon
+                const centerX = x + tileWidth / 2;
+                const centerY = y + tileHeight / 2;
+                
+                if (!isPointInPolygon(centerX, centerY, polygonPoints)) {
+                    // Try vertical orientation
+                    tileWidth = 50;
+                    tileHeight = 100;
+                    const centerX2 = x + tileWidth / 2;
+                    const centerY2 = y + tileHeight / 2;
+                    
+                    if (!isPointInPolygon(centerX2, centerY2, polygonPoints)) {
+                        continue;
+                    }
+                }
+                
+                // Check for overlaps
+                if (overlapsWithRunway(x, y, tileWidth, tileHeight) || 
+                    overlapsWithExistingTiles(x, y, tileWidth, tileHeight)) {
+                    continue;
+                }
+                
+                // Determine if this tile is on the perimeter
+                const isPerimeter = useRamps && isTileOnPerimeter(x, y, tileWidth, tileHeight, polygonPoints);
+                
+                if (isPerimeter && tileHeight === 50) {
+                    // Use ramp on perimeter (horizontal tiles only)
+                    const rampTile = createRampTile(x, y, 'Ramp 1m');
+                    rampTile.setAttribute('height', '25');
+                    if (rampTile) {
+                        svg.appendChild(rampTile);
+                        tilesPlaced++;
+                        currentArea += rampArea;
+                        
+                        if (!inventory['Ramp 1m']) {
+                            inventory['Ramp 1m'] = 0;
+                        }
+                        inventory['Ramp 1m']++;
+                    }
+                } else {
+                    // Use regular tile
+                    const tile = createTile(x, y, tileWidth, tileHeight, 'Tile 1m × 0.5m');
+                    if (tile) {
+                        svg.appendChild(tile);
+                        tilesPlaced++;
+                        currentArea += tileArea;
+                        
+                        if (!inventory['Tile 1m × 0.5m']) {
+                            inventory['Tile 1m × 0.5m'] = 0;
+                        }
+                        inventory['Tile 1m × 0.5m']++;
+                    }
+                }
+            }
+        }
+        
+        updateInventory();
+        
+        return {
+            success: true,
+            tilesPlaced: tilesPlaced,
+            areaCovered: currentArea / 10000
+        };
+    }
+    
+    /**
+     * Check if a point is inside a polygon using ray-casting algorithm
+     */
+    function isPointInPolygon(x, y, polygon) {
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i].x, yi = polygon[i].y;
+            const xj = polygon[j].x, yj = polygon[j].y;
+            
+            const intersect = ((yi > y) !== (yj > y)) &&
+                (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
+    
+    /**
+     * Check if a tile is on the perimeter of the polygon
+     */
+    function isTileOnPerimeter(x, y, width, height, polygon) {
+        // Check if any corner or edge is near the polygon boundary
+        const corners = [
+            { x: x, y: y },
+            { x: x + width, y: y },
+            { x: x, y: y + height },
+            { x: x + width, y: y + height }
+        ];
+        
+        // Check if any adjacent cell (50cm away) is outside polygon
+        const adjacentCells = [
+            { x: x - 50, y: y },      // Left
+            { x: x + width, y: y },   // Right
+            { x: x, y: y - 50 },      // Top
+            { x: x, y: y + height }   // Bottom
+        ];
+        
+        for (const cell of adjacentCells) {
+            if (!isPointInPolygon(cell.x + 25, cell.y + 25, polygon)) {
+                return true; // Adjacent to exterior
+            }
+        }
+        
+        return false;
+    }
+    
     /**
      * Calculate and automatically place tiles around the runway
      */
@@ -502,6 +880,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let startPoint = { x: 0, y: 0 };
     
     svg.addEventListener('mousedown', (e) => {
+        // Disable panning when in drawing mode
+        if (isDrawing) return;
+        
         if (e.target === svg || e.target.tagName === 'rect' && e.target.getAttribute('fill') === 'url(#grid)') {
             isPanning = true;
             startPoint = { x: e.clientX, y: e.clientY };
@@ -522,12 +903,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     svg.addEventListener('mouseup', () => {
         isPanning = false;
-        svg.style.cursor = 'grab';
+        if (!isDrawing) {
+            svg.style.cursor = 'grab';
+        }
     });
     
     svg.addEventListener('mouseleave', () => {
         isPanning = false;
-        svg.style.cursor = 'grab';
+        if (!isDrawing) {
+            svg.style.cursor = 'grab';
+        }
     });
     
     // Drag and Drop functionality

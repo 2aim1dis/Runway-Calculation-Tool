@@ -17,6 +17,34 @@
         </div>
         <div class="toolbar-calculator">
             <button id="calc-toggle-btn" class="calc-toggle-btn">📐 Square Meter Calculation</button>
+            <button id="draw-toggle-btn" class="calc-toggle-btn">✏️ Drawing the Space</button>
+        </div>
+    </div>
+
+    <!-- Drawing Tool Panel -->
+    <div id="draw-panel" class="calc-panel">
+        <div class="calc-content">
+            <h3>Draw Custom Space</h3>
+            <div class="calc-form">
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="draw-use-ramps">
+                        <span>Use ramps on outline</span>
+                    </label>
+                </div>
+                <div class="draw-instructions">
+                    <p>📍 Click on the grid to draw points</p>
+                    <p>✅ Click first point again to close shape</p>
+                    <p>🔄 Shape will auto-close after 20 points</p>
+                </div>
+                <div class="calc-buttons">
+                    <button id="start-drawing-btn" class="btn-primary">Start Drawing</button>
+                    <button id="cancel-drawing-btn" class="btn-secondary" style="display: none;">Cancel Drawing</button>
+                    <button id="fill-shape-btn" class="btn-primary" style="display: none;">Fill Shape with Tiles</button>
+                    <button id="draw-close-btn" class="btn-secondary">Close</button>
+                </div>
+                <div id="draw-result" class="calc-result"></div>
+            </div>
         </div>
     </div>
 

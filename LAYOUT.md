@@ -20,7 +20,7 @@
 │        │                                          │             │
 │<div    │ <div class="container">                  │<div class= │
 │class=  │   display: flex                          │"inventory- │
-│"tile-  │   align-items: center                    │panel">     │
+│"tile-  │   align-items: flex-start                │panel">     │
 │palette>│   justify-content: center                │  display:  │
 │        │   position: relative                     │  flex      │
 │bg:#f5f5│   background: #ffffff                    │  flex-dir: │
@@ -30,72 +30,97 @@
 │right:  │    position: relative                    │padding:16px│
 │2px     │    width: 100%; height: 100%             │border-left │
 │overflow│    display: flex                         │overflow:   │
-│-y:auto │    align/justify: center                 │hidden      │
-│        │                                          │            │
-│<h3>    │   <div class="zoom-controls">            │<h3>        │
-│"Avail- │     position: absolute                   │"Objects in │
-│able    │     top: 18px; right: 24px               │Grid"       │
-│Tiles"  │     display: flex; gap: 12px             │font:22px   │
-│font:20p│     z-index: 10                          │margin:0 0  │
-│        │                                          │16px        │
-│<div    │     <button class="zoom-btn">            │            │
-│class=  │       [+] [-] [⊙]                        │<table      │
-│"palette│       width: 44px; height: 44px          │class=      │
-│-section│       border-radius: 50%                 │"inventory- │
-│">      │       border: 2px solid #4a90e2          │table">     │
-│        │       background: #ffffff                │  width:100%│
-│<h4>    │                                          │  border-   │
-│"100cm× │   <svg id="runway-svg"                   │  radius:14p│
-│100cm"  │     viewBox="0 0 1200 1200"              │  box-      │
-│font:14p│     width: 92%                           │  shadow:0  │
-│        │     height: auto                         │  2px 6px   │
-│<div    │     border: 1px solid #d7dfe6            │            │
-│class=  │     border-radius: 12px                  │<thead>     │
-│"palette│     cursor: grab                         │  bg:linear-│
-│-tile"  │     box-shadow: 0 2px 4px                │  gradient  │
-│draggab-│                                          │  (135deg,  │
-│le=true │     <defs>                               │  #4a90e2,  │
-│data-   │       <pattern id="grid"                 │  #357abd)  │
-│width=  │         width="50" height="50"           │  color:#fff│
-│"100"   │         patternUnits="userSpaceOnUse">   │  sticky:top│
-│data-   │         <path stroke="#ddd"/>            │            │
-│height= │       </pattern>                         │<tr>        │
-│"100">  │     </defs>                              │  <th>      │
-│        │                                          │  "Object"  │
-│  <svg> │     <rect fill="url(#grid)"/>            │  <th>      │
-│  30×30p│                                          │  "Count"   │
-│  viewBo│     <g id="runway-group"                 │  padding:  │
-│  x="0 0│       transform="translate(600,600)      │  10px 14px │
-│  100   │                  scale(0.1,-0.1)">       │  font:13px │
-│  100"> │                                          │            │
-│   <rect│       <!-- 31 LINE elements -->          │<tbody      │
-│   fill:│       <!-- 26 PATH (arc) elements -->    │id=         │
-│   #4a90│       <text>"3D Deltas precut tiles"     │"inventory- │
-│   e2   │       <text id="dimensions"              │body">      │
-│   strok│             opacity:0                    │            │
-│   e:#2c│             "200cm × 100cm"              │<tr>        │
-│   3e50 │             (shows on hover)             │  <td>      │
-│        │                                          │  "3D Deltas│
-│[100×50]│     </g>                                 │  precut    │
-│tile    │                                          │  tiles"    │
-│        │   </svg>                                 │  <td class=│
-│        │                                          │  "count-   │
-│        │ </div> <!-- svg-wrapper -->              │  cell">    │
-│        │</div> <!-- container -->                 │  "1"       │
-│        │                                          │  text-     │
-│        │                                          │  align:    │
-│        │                                          │  center    │
-│        │                                          │  font-     │
-│        │                                          │  weight:600│
-│        │                                          │  color:    │
-│        │                                          │  #2368b0   │
-│        │                                          │            │
+│-y:auto │    align-items: flex-start               │hidden      │
+│        │    justify-content: center               │            │
+│<h3>    │                                          │<h3>        │
+│"Avail- │   <div class="zoom-controls">            │"Objects in │
+│able    │     position: absolute                   │Grid"       │
+│Tiles"  │     top: 18px; right: 24px               │font:22px   │
+│font:20p│     display: flex; gap: 12px             │margin:0 0  │
+│        │     z-index: 10                          │16px        │
+│Tiles:  │                                          │            │
+│        │     <button class="zoom-btn">            │<table      │
+│100×100 │       [+] [-] [⊙] [✕]                    │class=      │
+│blue    │       width: 35px; height: 35px          │"inventory- │
+│#4a90e2 │       border-radius: 50%                 │table">     │
+│        │       border: 2px solid #4a90e2          │  width:100%│
+│1m×0.5m │       background: #ffffff                │  border-   │
+│grey    │       font-size: 14px                    │  radius:14p│
+│#5a6c7d │                                          │  box-      │
+│PL.100. │   <p class="grid-instruction">           │  shadow:0  │
+│01.01   │     position: absolute                   │  2px 6px   │
+│        │     top: 20px; left: 50%                 │            │
+│Ramp 1m │     transform: translateX(-50%)          │<thead>     │
+│orange  │     font-size: 13px                      │  bg:linear-│
+│#e8a87c │     z-index: 5                           │  gradient  │
+│PL.100. │     "💡 Tip: Right-click to rotate      │  (135deg,  │
+│07.00   │      • Double-click to delete"           │  #4a90e2,  │
+│        │                                          │  #357abd)  │
+│Ramp    │   <svg id="runway-svg"                   │  color:#fff│
+│0.5m    │     viewBox="0 0 1200 1200"              │  sticky:top│
+│orange  │     width: 92%                           │            │
+│#e8a87c │     height: auto                         │<tr>        │
+│PL.100. │     border: 1px solid #d7dfe6            │  <th>      │
+│08.00   │     border-radius: 12px                  │  "Object"  │
+│        │     cursor: grab                         │  <th>      │
+│Ramp    │     box-shadow: 0 2px 4px                │  "Count"   │
+│Corner  │                                          │  padding:  │
+│yellow  │     <defs>                               │  10px 14px │
+│#ffd700 │       <pattern id="grid"                 │  font:13px │
+│50×50   │         width="50" height="50"           │            │
+│L-shape │         patternUnits="userSpaceOnUse">   │<tbody      │
+│PL.100. │         <path stroke="#ddd"/>            │id=         │
+│05.00   │       </pattern>                         │"inventory- │
+│        │     </defs>                              │body">      │
+│Ramp Cut│                                          │            │
+│Right   │     <rect fill="url(#grid)"/>            │<tr>        │
+│green   │                                          │  <td>      │
+│#90ee90 │     <g id="runway-group"                 │  "3D Deltas│
+│100×25  │       transform="translate(600,600)      │  precut    │
+│angled  │                  scale(0.1,-0.1)">       │  tiles"    │
+│PL.100. │                                          │  <td class=│
+│06.00   │       <!-- 31 LINE elements -->          │  "count-   │
+│        │       <!-- 26 PATH (arc) elements -->    │  cell">    │
+│Ramp Cut│       <text>"3D Deltas precut tiles"     │  "1"       │
+│Left    │       <text id="dimensions"              │  text-     │
+│green   │             opacity:0                    │  align:    │
+│#90ee90 │             "200cm × 100cm"              │  center    │
+│100×25  │             (shows on hover)             │  font-     │
+│angled  │                                          │  weight:600│
+│PL.100. │     </g>                                 │  color:    │
+│04.00   │                                          │  #2368b0   │
+│        │     <!-- Dropped tiles appear here -->   │            │
+│        │   </svg>                                 │Dynamic rows│
+│        │                                          │for dropped │
+│        │ </div> <!-- svg-wrapper -->              │tiles based │
+│        │</div> <!-- container -->                 │on          │
+│        │                                          │inventory{} │
+│        │                                          │object      │
 └────────┴──────────────────────────────────────────┴─────────────┘
    ↑                        ↑                            ↑
 overflow-y: auto     cursor changes:        overflow: hidden
                      grab → grabbing
                      on mousedown
+                     Grid snapping:
+                     - 50cm for rect tiles
+                     - 25cm for corner/polygons
 ```
+
+---
+
+## Tile Catalog
+
+### Available Tiles
+
+| Title | Dimensions | Shape | Color | Part Number | Data Attributes |
+|-------|-----------|-------|-------|-------------|-----------------|
+| 100cm × 100cm | 100×100cm | Rectangle | Blue (#4a90e2) | - | data-width="100" data-height="100" data-tile-title="100cm × 100cm" |
+| Tile 1m × 0.5m | 100×50cm | Rectangle | Grey (#5a6c7d) | PL.100.01.01 | data-width="100" data-height="50" data-tile-title="Tile 1m × 0.5m" |
+| Ramp 1m | 100×25cm | Rectangle | Orange (#e8a87c) | PL.100.07.00 | data-width="100" data-height="25" data-tile-title="Ramp 1m" |
+| Ramp 0.5m | 50×25cm | Rectangle | Orange (#e8a87c) | PL.100.08.00 | data-width="50" data-height="25" data-tile-title="Ramp 0.5m" |
+| Ramp Corner | 50×50cm | Polygon (L-shape) | Yellow (#ffd700) | PL.100.05.00 | data-width="50" data-height="50" data-tile-title="Ramp Corner" |
+| Ramp Cut Right | 100×25cm | Polygon (angled) | Green (#90ee90) | PL.100.06.00 | data-width="100" data-height="25" data-tile-title="Ramp Cut Right" data-cut-type="right" |
+| Ramp Cut Left | 100×25cm | Polygon (angled) | Green (#90ee90) | PL.100.04.00 | data-width="100" data-height="25" data-tile-title="Ramp Cut Left" data-cut-type="left" |
 
 ---
 
@@ -178,8 +203,30 @@ overflow-y: auto     cursor changes:        overflow: hidden
 - `height: 100%`
 - `max-width: 100%`
 - `display: flex`
-- `align-items: center`
+- `align-items: flex-start`
 - `justify-content: center`
+
+**`.grid-instruction`**
+- `position: absolute`
+- `top: 20px`
+- `left: 50%`
+- `transform: translateX(-50%)`
+- `font-size: 13px`
+- `color: #64748b`
+- `background: rgba(255, 255, 255, 0.95)`
+- `padding: 8px 16px`
+- `border-radius: 8px`
+- `box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1)`
+- `border: 1px solid #e1e5ea`
+- `font-style: italic`
+- `z-index: 5`
+- Text: "💡 Tip: Right-click to rotate • Double-click to delete"
+
+**`.tile-subtitle`**
+- `margin: -4px 0 8px`
+- `font-size: 11px`
+- `color: #64748b`
+- `font-style: italic`
 
 **`#runway-svg`**
 - `display: block`
@@ -204,12 +251,12 @@ overflow-y: auto     cursor changes:        overflow: hidden
 - `z-index: 10`
 
 **`.zoom-btn`**
-- `width: 44px`
-- `height: 44px`
+- `width: 35px`
+- `height: 35px`
 - `border: 2px solid #4a90e2`
 - `background: #ffffff`
 - `border-radius: 50%`
-- `font-size: 18px`
+- `font-size: 14px`
 - `font-weight: 600`
 - `color: #2368b0`
 - `cursor: pointer`
@@ -310,10 +357,25 @@ overflow-y: auto     cursor changes:        overflow: hidden
 - **Stroke:** `#2c3e50` (dark blue-gray)
 - **Stroke Width:** 2px
 
+### Dropped Tiles
+- **Class:** `dropped-tile`
+- **Snapping:** 50cm grid for rectangles, 25cm grid for polygons (corners)
+- **Opacity:** `fill-opacity: 0.7`
+- **Stroke:** `#2c3e50`, width 2px
+- **Data Attributes:**
+  - `data-tile-name` - Title for inventory tracking
+  - `data-corner-x`, `data-corner-y` - Position for polygon shapes
+  - `data-shape-type` - "corner", "right", "left" for rotation logic
+  - `data-rotation` - Current rotation angle (0, 90, 180, 270)
+  - `data-width`, `data-height` - Original dimensions for angled ramps
+
 ### Interactive Elements
 - **Hover Text:** "200cm × 100cm" (initially `opacity: 0`)
 - **Title Text:** "3D Deltas precut tiles"
 - **Hover Area:** Transparent rect covering entire runway
+- **Drag & Drop:** HTML5 drag API with grid snapping
+- **Double-click:** Delete tile and update inventory
+- **Right-click:** Rotate tile 90° clockwise (with shape-specific logic)
 
 ---
 
@@ -326,28 +388,52 @@ overflow-y: auto     cursor changes:        overflow: hidden
 - `#zoom-in` - Zoom in button
 - `#zoom-out` - Zoom out button
 - `#zoom-reset` - Reset zoom button
+- `#clear-grid` - Clear all dropped tiles button
 - `#inventory-body` - Table tbody for dynamic rows
 
 ### Data Attributes
-- `data-width` - Tile width in cm (100)
-- `data-height` - Tile height in cm (100 or 50)
+**Palette Tiles:**
+- `data-width` - Tile width in cm
+- `data-height` - Tile height in cm
+- `data-tile-title` - Display name for inventory
+- `data-cut-type` - "right" or "left" for angled ramps
 - `draggable="true"` - Enables HTML5 drag API
+
+**Dropped Tiles:**
+- `data-tile-name` - Matches data-tile-title from palette
+- `data-corner-x`, `data-corner-y` - Top-left position for polygons
+- `data-shape-type` - Shape identifier for rotation
+- `data-rotation` - Current rotation state
+- `class="dropped-tile"` - Selector for cleanup
+
+### Inventory System
+- **Object:** `inventory = {}` - Stores tile counts
+- **Function:** `updateInventory()` - Rebuilds table from inventory object
+- **Format:** `{ "Tile 1m × 0.5m": 3, "Ramp Corner": 1, ... }`
 
 ### ViewBox State
 - **Initial:** `0 0 1200 1200`
 - **Zoom Factor:** ±20% per click
 - **Pan:** Mouse drag translates viewBox x/y
+- **Reset:** Returns to original viewBox
 
 ---
 
 ## Color Palette
+
+### Tile Colors
+- **Square Tile (100×100):** `#4a90e2` (blue)
+- **Rectangular Tile (1m×0.5m):** `#5a6c7d` (dark grey)
+- **Ramps (1m, 0.5m):** `#e8a87c` (orange)
+- **Ramp Corner:** `#ffd700` (yellow/gold)
+- **Angled Ramps (Cut Left/Right):** `#90ee90` (light green)
 
 ### Primary Colors
 - **Blue (Primary):** `#4a90e2`
 - **Blue (Dark):** `#357abd`
 - **Blue (Text):** `#2368b0`
 - **Dark Gray:** `#2c3e50`
-- **Red (Accent):** `#e74c3c`
+- **Grey (Tile):** `#5a6c7d`
 
 ### Neutral Colors
 - **White:** `#ffffff`
@@ -364,6 +450,39 @@ overflow-y: auto     cursor changes:        overflow: hidden
 ### Hover/Interaction Colors
 - **Hover BG:** `#f5faff`
 - **Even Row BG:** `#fafcff`
+
+---
+
+## Interactive Features
+
+### Drag & Drop
+- Tiles draggable from left palette
+- Drop on SVG grid with automatic snapping
+- Grid snapping: 50cm for rectangles, 25cm for corner pieces
+- Visual feedback: cursor changes, hover effects
+
+### Zoom & Pan
+- **Zoom In:** Button or mouse wheel up (+20%)
+- **Zoom Out:** Button or mouse wheel down (-20%)
+- **Reset Zoom:** Button returns to original view
+- **Pan:** Click and drag background to move view
+- **Cursor-centered zoom:** Wheel zooms toward mouse position
+
+### Tile Manipulation
+- **Move:** Click and drag placed tiles, snaps to grid
+- **Rotate:** Right-click rotates 90° clockwise
+  - Rectangles: Swap width/height
+  - Corner: 4 orientations (which corner is missing)
+  - Angled ramps: 4 orientations (direction of cut)
+- **Delete:** Double-click removes tile and updates inventory
+- **Clear All:** Clear grid button (✕) removes all dropped tiles
+
+### Inventory Tracking
+- Automatically counts tiles as they're dropped
+- Updates in real-time when tiles added/removed
+- Always shows "3D Deltas precut tiles" runway (count: 1)
+- Dynamic rows for each tile type placed
+- Clears when "Clear Grid" button clicked
 
 ---
 

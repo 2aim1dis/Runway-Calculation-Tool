@@ -10,13 +10,13 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                    <body> - overflow: hidden                    │
 │         <div class="main-container"> - CSS Grid                 │
-│      display: grid; grid-template-columns: 1fr 1fr 1fr         │
+│      display: grid; grid-template-columns: 1fr 3fr 2fr         │
 │                  width: 100vw; height: 100vh                    │
 ├────────┬──────────────────────────────────────────┬─────────────┤
 │        │                                          │             │
 │ LEFT   │          CENTER                          │    RIGHT    │
-│  1fr   │           1fr                            │     1fr     │
-│ ~33.3% │          ~33.3%                          │   ~33.3%    │
+│  1fr   │           3fr                            │     2fr     │
+│ ~16.7% │          ~50%                            │   ~33.3%    │
 │        │                                          │             │
 │<div    │ <div class="container">                  │<div class= │
 │class=  │   display: flex                          │"inventory- │
@@ -129,12 +129,12 @@ overflow-y: auto     cursor changes:        overflow: hidden
 ### Main Container
 **`.main-container`**
 - `display: grid`
-- `grid-template-columns: 1fr 1fr 1fr`
+- `grid-template-columns: 1fr 3fr 2fr`
 - `height: 100vh`
 - `width: 100vw`
 - `overflow: hidden`
 
-**Ratio:** 1 : 1 : 1 (Equal thirds - 33.3% each)
+**Ratio:** 1 : 3 : 2 (Available Tiles 16.7% | Grid 50% | Objects in Grid 33.3%)
 
 ---
 

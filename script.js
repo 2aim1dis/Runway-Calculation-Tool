@@ -134,9 +134,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inventory tracking system - stores count of each tile type placed on grid
     const inventory = {};
     
+    // Price mapping for each tile type (in euros)
+    const tilePrices = {
+        'Tile 1m × 1m': 25.00,
+        'Tile 1m × 0.5m': 15.00,
+        'Ramp 1m': 30.00,
+        'Ramp 0.5m': 18.00,
+        'Ramp Corner': 22.00,
+        'Ramp Cut Right': 28.00,
+        'Ramp Cut Left': 28.00
+    };
+    
     /**
      * Updates the inventory table to reflect current tiles on grid
-     * Always shows the runway (3D Deltas) and any dropped tiles with counts
+     * Always shows the runway (3D Deltas) and any dropped tiles with counts and prices
      */
     function updateInventory() {
         const inventoryBody = document.getElementById('inventory-body');
@@ -147,16 +158,22 @@ document.addEventListener('DOMContentLoaded', () => {
         runwayRow.innerHTML = `
             <td>3D Deltas precut tiles</td>
             <td class="count-cell">1</td>
+            <td class="price-cell">€0.00</td>
         `;
         inventoryBody.appendChild(runwayRow);
         
-        // Add dropped tiles dynamically
+        // Add dropped tiles dynamically with pricing
         Object.keys(inventory).forEach(key => {
             if (inventory[key] > 0) {
+                const count = inventory[key];
+                const unitPrice = tilePrices[key] || 0;
+                const totalPrice = (count * unitPrice).toFixed(2);
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${key}</td>
-                    <td class="count-cell">${inventory[key]}</td>
+                    <td class="count-cell">${count}</td>
+                    <td class="price-cell">€${totalPrice}</td>
                 `;
                 inventoryBody.appendChild(row);
             }

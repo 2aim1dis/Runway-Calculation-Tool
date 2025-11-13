@@ -156,7 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
         tile.addEventListener('dragstart', (e) => {
             draggedTileData = {
                 width: parseInt(tile.dataset.width),
-                height: parseInt(tile.dataset.height)
+                height: parseInt(tile.dataset.height),
+                title: tile.dataset.tileTitle || `${tile.dataset.width}cm × ${tile.dataset.height}cm`
             };
             e.dataTransfer.effectAllowed = 'copy';
         });
@@ -193,16 +194,24 @@ document.addEventListener('DOMContentLoaded', () => {
         newTile.setAttribute('y', snappedY);
         newTile.setAttribute('width', draggedTileData.width);
         newTile.setAttribute('height', draggedTileData.height);
-        // Blue for 100x100 square, dark grey for all rectangular tiles
-        newTile.setAttribute('fill', draggedTileData.width === 100 && draggedTileData.height === 100 ? '#4a90e2' : '#5a6c7d');
+        
+        // Set color based on tile type: Blue for 100x100, orange for ramps, grey for other tiles
+        let fillColor = '#5a6c7d'; // Default grey
+        if (draggedTileData.width === 100 && draggedTileData.height === 100) {
+            fillColor = '#4a90e2'; // Blue for square tile
+        } else if (draggedTileData.height === 25) {
+            fillColor = '#e8a87c'; // Orange for ramps
+        }
+        
+        newTile.setAttribute('fill', fillColor);
         newTile.setAttribute('fill-opacity', '0.7');
         newTile.setAttribute('stroke', '#2c3e50');
         newTile.setAttribute('stroke-width', '2');
         newTile.setAttribute('class', 'dropped-tile');
         newTile.style.cursor = 'move';
         
-        // Store tile info as data attribute for inventory tracking
-        const tileName = `${draggedTileData.width}cm × ${draggedTileData.height}cm Tile`;
+        // Store tile info as data attribute for inventory tracking using the title from palette
+        const tileName = draggedTileData.title;
         newTile.setAttribute('data-tile-name', tileName);
         
         // Update inventory count - increment or initialize

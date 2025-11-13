@@ -75,9 +75,17 @@ body {
     position: relative;
 }
 
-#runway-svg {
+.svg-wrapper {
+    position: relative;
+    display: inline-block;
     max-width: 90vw;
     max-height: 90vh;
+}
+
+#runway-svg {
+    display: block;
+    width: 100%;
+    height: auto;
     border: 1px solid #ddd;
     cursor: grab;
 }
@@ -88,20 +96,20 @@ body {
 
 .zoom-controls {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 10px;
+    right: 10px;
     display: flex;
     gap: 10px;
     z-index: 10;
 }
 
 .zoom-btn {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     border: 2px solid #4a90e2;
     background: white;
     border-radius: 50%;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: bold;
     color: #4a90e2;
     cursor: pointer;

@@ -75,6 +75,409 @@ document.addEventListener('DOMContentLoaded', () => {
         updateInventory();
     });
     
+    // Square Meter Calculator functionality
+    const calcToggleBtn = document.getElementById('calc-toggle-btn');
+    const calcPanel = document.getElementById('calc-panel');
+    const calcCloseBtn = document.getElementById('calc-close-btn');
+    const calculateBtn = document.getElementById('calculate-btn');
+    const squareMetersInput = document.getElementById('square-meters');
+    const useRampsCheckbox = document.getElementById('use-ramps');
+    const calcResult = document.getElementById('calc-result');
+    
+    calcToggleBtn.addEventListener('click', () => {
+        calcPanel.classList.toggle('active');
+    });
+    
+    calcCloseBtn.addEventListener('click', () => {
+        calcPanel.classList.remove('active');
+    });
+    
+    calculateBtn.addEventListener('click', () => {
+        const targetSquareMeters = parseFloat(squareMetersInput.value);
+        const useRamps = useRampsCheckbox.checked;
+        
+        if (!targetSquareMeters || targetSquareMeters <= 0) {
+            showCalcResult('Please enter a valid square meter value.', 'error');
+            return;
+        }
+        
+        // Convert to cm² (1 m² = 10,000 cm²)
+        const targetArea = targetSquareMeters * 10000;
+        
+        // Calculate and place tiles
+        const result = calculateTilePlacement(targetArea, useRamps);
+        
+        if (result.success) {
+            showCalcResult(
+                `Successfully placed ${result.tilesPlaced} tiles covering ${result.areaCovered.toFixed(2)} m²`,
+                'success'
+            );
+            calcPanel.classList.remove('active');
+        } else {
+            showCalcResult(result.message, 'error');
+        }
+    });
+    
+    function showCalcResult(message, type) {
+        calcResult.textContent = message;
+        calcResult.className = `calc-result ${type}`;
+    }
+    
+    /**
+     * Calculate and automatically place tiles around the runway
+     */
+    function calculateTilePlacement(targetArea, useRamps) {
+        // Clear existing tiles first
+        const droppedTiles = svg.querySelectorAll('.dropped-tile');
+        droppedTiles.forEach(tile => tile.remove());
+        Object.keys(inventory).forEach(key => delete inventory[key]);
+        
+        // Runway bounds (in SVG coordinates)
+        const runwayBounds = {
+            x: 500,
+            y: 550,
+            width: 200,
+            height: 100
+        };
+        
+        // Define buffer zones around the runway where we'll place tiles
+        const buffer = 50; // Start placing tiles 50cm from runway edge
+        
+        // Tile size: 1m × 0.5m = 100cm × 50cm = 5000 cm²
+        const tileArea = 5000;
+        const rampArea = 2500; // Ramp: 1m × 0.25m = 2500 cm²
+        let currentArea = 0;
+        let tilesPlaced = 0;
+        
+        // Strategy: Place tiles in concentric rectangles around the runway
+        let layer = 0;
+        const maxLayers = 20; // Prevent infinite loop
+        let totalLayers = 0;
+        
+        // First pass: count how many layers we'll need
+        let tempArea = 0;
+        let tempLayer = 0;
+        while (tempArea < targetArea && tempLayer < maxLayers) {
+            const layerOffset = buffer + (tempLayer * 50);
+            const layerBounds = {
+                x: runwayBounds.x - layerOffset,
+                y: runwayBounds.y - layerOffset,
+                width: runwayBounds.width + (layerOffset * 2),
+                height: runwayBounds.height + (layerOffset * 2)
+            };
+            
+            // Rough estimate of tiles per layer
+            const tilesInLayer = Math.floor((layerBounds.width * 2 + layerBounds.height * 2) / 50);
+            tempArea += tilesInLayer * tileArea;
+            tempLayer++;
+        }
+        totalLayers = tempLayer;
+        
+        // Second pass: actually place tiles
+        while (currentArea < targetArea && layer < maxLayers) {
+            const layerOffset = buffer + (layer * 50);
+            
+            // Define the current layer boundary around runway
+            const layerBounds = {
+                x: runwayBounds.x - layerOffset,
+                y: runwayBounds.y - layerOffset,
+                width: runwayBounds.width + (layerOffset * 2),
+                height: runwayBounds.height + (layerOffset * 2)
+            };
+            
+            // Determine if this is the outermost layer and we're using ramps
+            const isOutermostLayer = (layer === totalLayers - 1 || layer >= totalLayers - 2);
+            const useRampsOnThisLayer = useRamps && isOutermostLayer;
+            
+            // Place tiles on TOP edge of current layer
+            for (let x = layerBounds.x; x < layerBounds.x + layerBounds.width && currentArea < targetArea; x += 100) {
+                const y = layerBounds.y;
+                
+                if (useRampsOnThisLayer) {
+                    // Use ramp on outermost layer
+                    const tileWidth = 100;
+                    const tileHeight = 25;
+                    
+                    if (!overlapsWithRunway(x, y, tileWidth, tileHeight) && 
+                        !overlapsWithExistingTiles(x, y, tileWidth, tileHeight)) {
+                        
+                        const rampTile = createRampTile(x, y, 'Ramp 1m');
+                        if (rampTile) {
+                            svg.appendChild(rampTile);
+                            tilesPlaced++;
+                            currentArea += rampArea;
+                            
+                            if (!inventory['Ramp 1m']) {
+                                inventory['Ramp 1m'] = 0;
+                            }
+                            inventory['Ramp 1m']++;
+                        }
+                    }
+                } else {
+                    // Use regular tile
+                    const tileWidth = 100;
+                    const tileHeight = 50;
+                    
+                    if (!overlapsWithRunway(x, y, tileWidth, tileHeight) && 
+                        !overlapsWithExistingTiles(x, y, tileWidth, tileHeight)) {
+                        
+                        const tile = createTile(x, y, tileWidth, tileHeight, 'Tile 1m × 0.5m');
+                        if (tile) {
+                            svg.appendChild(tile);
+                            tilesPlaced++;
+                            currentArea += tileArea;
+                            
+                            if (!inventory['Tile 1m × 0.5m']) {
+                                inventory['Tile 1m × 0.5m'] = 0;
+                            }
+                            inventory['Tile 1m × 0.5m']++;
+                        }
+                    }
+                }
+            }
+            
+            // Place tiles on BOTTOM edge of current layer
+            for (let x = layerBounds.x; x < layerBounds.x + layerBounds.width && currentArea < targetArea; x += 100) {
+                let y, tileHeight;
+                
+                if (useRampsOnThisLayer) {
+                    y = layerBounds.y + layerBounds.height - 25;
+                    tileHeight = 25;
+                } else {
+                    y = layerBounds.y + layerBounds.height - 50;
+                    tileHeight = 50;
+                }
+                
+                if (useRampsOnThisLayer) {
+                    // Use ramp on outermost layer
+                    const tileWidth = 100;
+                    
+                    if (!overlapsWithRunway(x, y, tileWidth, tileHeight) && 
+                        !overlapsWithExistingTiles(x, y, tileWidth, tileHeight)) {
+                        
+                        const rampTile = createRampTile(x, y, 'Ramp 1m');
+                        if (rampTile) {
+                            svg.appendChild(rampTile);
+                            tilesPlaced++;
+                            currentArea += rampArea;
+                            
+                            if (!inventory['Ramp 1m']) {
+                                inventory['Ramp 1m'] = 0;
+                            }
+                            inventory['Ramp 1m']++;
+                        }
+                    }
+                } else {
+                    // Use regular tile
+                    const tileWidth = 100;
+                    
+                    if (!overlapsWithRunway(x, y, tileWidth, tileHeight) && 
+                        !overlapsWithExistingTiles(x, y, tileWidth, tileHeight)) {
+                        
+                        const tile = createTile(x, y, tileWidth, tileHeight, 'Tile 1m × 0.5m');
+                        if (tile) {
+                            svg.appendChild(tile);
+                            tilesPlaced++;
+                            currentArea += tileArea;
+                            
+                            if (!inventory['Tile 1m × 0.5m']) {
+                                inventory['Tile 1m × 0.5m'] = 0;
+                            }
+                            inventory['Tile 1m × 0.5m']++;
+                        }
+                    }
+                }
+            }
+            
+            // Place tiles on LEFT edge of current layer (vertical orientation)
+            const leftStartY = layerBounds.y + 50;
+            const leftEndY = layerBounds.y + layerBounds.height - 50;
+            
+            for (let y = leftStartY; y < leftEndY && currentArea < targetArea; y += 100) {
+                const x = layerBounds.x;
+                const tileWidth = 50;
+                const tileHeight = 100;
+                
+                if (!overlapsWithRunway(x, y, tileWidth, tileHeight) && 
+                    !overlapsWithExistingTiles(x, y, tileWidth, tileHeight)) {
+                    
+                    const tile = createTile(x, y, tileWidth, tileHeight, 'Tile 1m × 0.5m');
+                    if (tile) {
+                        svg.appendChild(tile);
+                        tilesPlaced++;
+                        currentArea += tileArea;
+                        
+                        if (!inventory['Tile 1m × 0.5m']) {
+                            inventory['Tile 1m × 0.5m'] = 0;
+                        }
+                        inventory['Tile 1m × 0.5m']++;
+                    }
+                }
+            }
+            
+            // Place tiles on RIGHT edge of current layer (vertical orientation)
+            const rightStartY = layerBounds.y + 50;
+            const rightEndY = layerBounds.y + layerBounds.height - 50;
+            
+            for (let y = rightStartY; y < rightEndY && currentArea < targetArea; y += 100) {
+                const x = layerBounds.x + layerBounds.width - 50;
+                const tileWidth = 50;
+                const tileHeight = 100;
+                
+                if (!overlapsWithRunway(x, y, tileWidth, tileHeight) && 
+                    !overlapsWithExistingTiles(x, y, tileWidth, tileHeight)) {
+                    
+                    const tile = createTile(x, y, tileWidth, tileHeight, 'Tile 1m × 0.5m');
+                    if (tile) {
+                        svg.appendChild(tile);
+                        tilesPlaced++;
+                        currentArea += tileArea;
+                        
+                        if (!inventory['Tile 1m × 0.5m']) {
+                            inventory['Tile 1m × 0.5m'] = 0;
+                        }
+                        inventory['Tile 1m × 0.5m']++;
+                    }
+                }
+            }
+            
+            // Add corner ramps if using ramps and on outermost layer
+            if (useRampsOnThisLayer && currentArea < targetArea) {
+                const corners = [
+                    { x: layerBounds.x, y: layerBounds.y }, // Top-left
+                    { x: layerBounds.x + layerBounds.width - 50, y: layerBounds.y }, // Top-right
+                    { x: layerBounds.x, y: layerBounds.y + layerBounds.height - 50 }, // Bottom-left
+                    { x: layerBounds.x + layerBounds.width - 50, y: layerBounds.y + layerBounds.height - 50 } // Bottom-right
+                ];
+                
+                for (const corner of corners) {
+                    if (currentArea >= targetArea) break;
+                    
+                    // Try to place a corner ramp (50x50 L-shape)
+                    if (!overlapsWithRunway(corner.x, corner.y, 50, 50) && 
+                        !overlapsWithExistingTiles(corner.x, corner.y, 50, 50)) {
+                        
+                        const cornerRamp = createCornerRamp(corner.x, corner.y);
+                        if (cornerRamp) {
+                            svg.appendChild(cornerRamp);
+                            tilesPlaced++;
+                            currentArea += 1875; // Corner ramp approximate area
+                            
+                            if (!inventory['Ramp Corner']) {
+                                inventory['Ramp Corner'] = 0;
+                            }
+                            inventory['Ramp Corner']++;
+                        }
+                    }
+                }
+            }
+            
+            layer++;
+        }
+        
+        updateInventory();
+        
+        return {
+            success: true,
+            tilesPlaced: tilesPlaced,
+            areaCovered: currentArea / 10000 // Convert back to m²
+        };
+    }
+    
+    /**
+     * Create a tile element
+     */
+    function createTile(x, y, width, height, tileName) {
+        const tile = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        tile.setAttribute('x', x);
+        tile.setAttribute('y', y);
+        tile.setAttribute('width', width);
+        tile.setAttribute('height', height);
+        
+        // Color based on size
+        let fillColor = '#5a6c7d';
+        if (width === 100 && height === 100) {
+            fillColor = '#4a90e2';
+        } else if (height === 25) {
+            fillColor = '#e8a87c';
+        }
+        
+        tile.setAttribute('fill', fillColor);
+        tile.setAttribute('fill-opacity', '0.7');
+        tile.setAttribute('stroke', '#2c3e50');
+        tile.setAttribute('stroke-width', '2');
+        tile.setAttribute('class', 'dropped-tile');
+        tile.style.cursor = 'move';
+        tile.setAttribute('data-tile-name', tileName);
+        
+        makeTileDraggable(tile);
+        
+        return tile;
+    }
+    
+    /**
+     * Find optimal positions for ramps around the layout
+     */
+    function findRampPositions(runwayBounds) {
+        const positions = [];
+        
+        // Add ramps at strategic positions around the edges
+        // Top edge
+        positions.push({ x: runwayBounds.x - 100, y: runwayBounds.y - 25, type: 'Ramp 1m' });
+        positions.push({ x: runwayBounds.x + runwayBounds.width, y: runwayBounds.y - 25, type: 'Ramp 1m' });
+        
+        // Bottom edge
+        positions.push({ x: runwayBounds.x - 100, y: runwayBounds.y + runwayBounds.height, type: 'Ramp 1m' });
+        positions.push({ x: runwayBounds.x + runwayBounds.width, y: runwayBounds.y + runwayBounds.height, type: 'Ramp 1m' });
+        
+        return positions;
+    }
+    
+    /**
+     * Create a ramp tile
+     */
+    function createRampTile(x, y, rampType) {
+        const tile = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        tile.setAttribute('x', x);
+        tile.setAttribute('y', y);
+        tile.setAttribute('width', 100);
+        tile.setAttribute('height', 25);
+        tile.setAttribute('fill', '#e8a87c');
+        tile.setAttribute('fill-opacity', '0.7');
+        tile.setAttribute('stroke', '#2c3e50');
+        tile.setAttribute('stroke-width', '2');
+        tile.setAttribute('class', 'dropped-tile');
+        tile.style.cursor = 'move';
+        tile.setAttribute('data-tile-name', rampType);
+        
+        makeTileDraggable(tile);
+        
+        return tile;
+    }
+    
+    /**
+     * Create a corner ramp tile (L-shaped)
+     */
+    function createCornerRamp(x, y) {
+        const tile = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        const points = `${x},${y} ${x + 50},${y} ${x + 50},${y + 25} ${x + 25},${y + 25} ${x + 25},${y + 50} ${x},${y + 50}`;
+        tile.setAttribute('points', points);
+        tile.setAttribute('fill', '#ffd700');
+        tile.setAttribute('fill-opacity', '0.7');
+        tile.setAttribute('stroke', '#2c3e50');
+        tile.setAttribute('stroke-width', '2');
+        tile.setAttribute('class', 'dropped-tile');
+        tile.style.cursor = 'move';
+        tile.setAttribute('data-tile-name', 'Ramp Corner');
+        tile.setAttribute('data-corner-x', x);
+        tile.setAttribute('data-corner-y', y);
+        tile.setAttribute('data-shape-type', 'corner');
+        
+        makeTileDraggable(tile);
+        
+        return tile;
+    }
+    
     // Mouse wheel zoom
     svg.addEventListener('wheel', (e) => {
         e.preventDefault();

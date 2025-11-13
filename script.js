@@ -19,9 +19,104 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Zoom and Pan functionality
+    const svg = document.getElementById('runway-svg');
+    const zoomInBtn = document.getElementById('zoom-in');
+    const zoomOutBtn = document.getElementById('zoom-out');
+    const zoomResetBtn = document.getElementById('zoom-reset');
+    
+    let currentZoom = 1;
+    let viewBox = { x: 0, y: 0, width: 1200, height: 1200 };
+    const originalViewBox = { ...viewBox };
+    
+    function updateViewBox() {
+        svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
+    }
+    
+    // Zoom buttons
+    zoomInBtn.addEventListener('click', () => {
+        currentZoom *= 1.2;
+        const centerX = viewBox.x + viewBox.width / 2;
+        const centerY = viewBox.y + viewBox.height / 2;
+        viewBox.width = originalViewBox.width / currentZoom;
+        viewBox.height = originalViewBox.height / currentZoom;
+        viewBox.x = centerX - viewBox.width / 2;
+        viewBox.y = centerY - viewBox.height / 2;
+        updateViewBox();
+    });
+    
+    zoomOutBtn.addEventListener('click', () => {
+        currentZoom /= 1.2;
+        if (currentZoom < 1) currentZoom = 1;
+        const centerX = viewBox.x + viewBox.width / 2;
+        const centerY = viewBox.y + viewBox.height / 2;
+        viewBox.width = originalViewBox.width / currentZoom;
+        viewBox.height = originalViewBox.height / currentZoom;
+        viewBox.x = centerX - viewBox.width / 2;
+        viewBox.y = centerY - viewBox.height / 2;
+        updateViewBox();
+    });
+    
+    zoomResetBtn.addEventListener('click', () => {
+        currentZoom = 1;
+        viewBox = { ...originalViewBox };
+        updateViewBox();
+    });
+    
+    // Mouse wheel zoom
+    svg.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.9 : 1.1;
+        currentZoom *= delta;
+        if (currentZoom < 1) currentZoom = 1;
+        
+        const svgRect = svg.getBoundingClientRect();
+        const mouseX = (e.clientX - svgRect.left) / svgRect.width * viewBox.width + viewBox.x;
+        const mouseY = (e.clientY - svgRect.top) / svgRect.height * viewBox.height + viewBox.y;
+        
+        viewBox.width = originalViewBox.width / currentZoom;
+        viewBox.height = originalViewBox.height / currentZoom;
+        viewBox.x = mouseX - (e.clientX - svgRect.left) / svgRect.width * viewBox.width;
+        viewBox.y = mouseY - (e.clientY - svgRect.top) / svgRect.height * viewBox.height;
+        
+        updateViewBox();
+    });
+    
+    // Pan functionality
+    let isPanning = false;
+    let startPoint = { x: 0, y: 0 };
+    
+    svg.addEventListener('mousedown', (e) => {
+        if (e.target === svg || e.target.tagName === 'rect' && e.target.getAttribute('fill') === 'url(#grid)') {
+            isPanning = true;
+            startPoint = { x: e.clientX, y: e.clientY };
+            svg.style.cursor = 'grabbing';
+        }
+    });
+    
+    svg.addEventListener('mousemove', (e) => {
+        if (isPanning) {
+            const dx = (startPoint.x - e.clientX) * (viewBox.width / svg.getBoundingClientRect().width);
+            const dy = (startPoint.y - e.clientY) * (viewBox.height / svg.getBoundingClientRect().height);
+            viewBox.x += dx;
+            viewBox.y += dy;
+            startPoint = { x: e.clientX, y: e.clientY };
+            updateViewBox();
+        }
+    });
+    
+    svg.addEventListener('mouseup', () => {
+        isPanning = false;
+        svg.style.cursor = 'grab';
+    });
+    
+    svg.addEventListener('mouseleave', () => {
+        isPanning = false;
+        svg.style.cursor = 'grab';
+    });
+    
     // Drag and Drop functionality
     const paletteTiles = document.querySelectorAll('.palette-tile');
-    const svg = document.getElementById('runway-svg');
     let draggedTileData = null;
     
     // Handle drag start from palette

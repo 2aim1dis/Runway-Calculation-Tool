@@ -223,6 +223,77 @@ document.addEventListener('DOMContentLoaded', () => {
         e.dataTransfer.dropEffect = 'copy';
     });
     
+    /**
+     * Check if a rectangle overlaps with the runway
+     * Runway is at position 600,600 with scale 0.1, actual size -1000,-500 to 1000,500
+     * After transformation: x: 600-100=500 to 600+100=700, y: 600-50=550 to 600+50=650
+     */
+    function overlapsWithRunway(x, y, width, height) {
+        const runwayX = 500;
+        const runwayY = 550;
+        const runwayWidth = 200;
+        const runwayHeight = 100;
+        
+        return !(x + width <= runwayX || 
+                 x >= runwayX + runwayWidth ||
+                 y + height <= runwayY ||
+                 y >= runwayY + runwayHeight);
+    }
+    
+    /**
+     * Check if a tile overlaps with any existing dropped tiles
+     */
+    function overlapsWithExistingTiles(newX, newY, newWidth, newHeight, excludeTile = null) {
+        const droppedTiles = svg.querySelectorAll('.dropped-tile');
+        
+        for (let tile of droppedTiles) {
+            if (tile === excludeTile) continue; // Skip the tile being moved
+            
+            let tileX, tileY, tileWidth, tileHeight;
+            
+            if (tile.tagName === 'polygon') {
+                // For polygons, get bounding box
+                const bbox = tile.getBBox();
+                tileX = bbox.x;
+                tileY = bbox.y;
+                tileWidth = bbox.width;
+                tileHeight = bbox.height;
+            } else {
+                // For rectangles
+                tileX = parseFloat(tile.getAttribute('x'));
+                tileY = parseFloat(tile.getAttribute('y'));
+                tileWidth = parseFloat(tile.getAttribute('width'));
+                tileHeight = parseFloat(tile.getAttribute('height'));
+            }
+            
+            // Check for overlap
+            if (!(newX + newWidth <= tileX || 
+                  newX >= tileX + tileWidth ||
+                  newY + newHeight <= tileY ||
+                  newY >= tileY + tileHeight)) {
+                return true; // Collision detected
+            }
+        }
+        
+        return false; // No collision
+    }
+    
+    /**
+     * Get bounding box for a tile based on its type and position
+     */
+    function getTileBoundingBox(x, y, tileData) {
+        if (tileData.isCorner) {
+            // L-shape corner: 50x50 with bottom-right missing
+            return { x, y, width: 50, height: 50 };
+        } else if (tileData.cutType) {
+            // Angled ramp: 100x25
+            return { x, y, width: 100, height: 25 };
+        } else {
+            // Regular rectangle
+            return { x, y, width: tileData.width, height: tileData.height };
+        }
+    }
+    
     svg.addEventListener('drop', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -242,6 +313,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const snapSize = draggedTileData.isCorner ? 25 : 50;
         const snappedX = Math.round(x / snapSize) * snapSize;
         const snappedY = Math.round(y / snapSize) * snapSize;
+        
+        // Check for collisions
+        const bbox = getTileBoundingBox(snappedX, snappedY, draggedTileData);
+        
+        if (overlapsWithRunway(bbox.x, bbox.y, bbox.width, bbox.height)) {
+            console.log('Cannot place tile: overlaps with runway');
+            draggedTileData = null;
+            return;
+        }
+        
+        if (overlapsWithExistingTiles(bbox.x, bbox.y, bbox.width, bbox.height)) {
+            console.log('Cannot place tile: overlaps with existing tile');
+            draggedTileData = null;
+            return;
+        }
         
         // Create new tile on grid - use polygon for corner and angled cuts, rect for others
         let newTile;
@@ -357,6 +443,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const snapSize = isPolygon ? 25 : 50;
                 const newX = Math.round((mouseX - offset.x) / snapSize) * snapSize;
                 const newY = Math.round((mouseY - offset.y) / snapSize) * snapSize;
+                
+                // Get dimensions for collision check
+                let checkWidth, checkHeight;
+                if (isPolygon) {
+                    const bbox = selectedElement.getBBox();
+                    checkWidth = bbox.width;
+                    checkHeight = bbox.height;
+                } else {
+                    checkWidth = parseFloat(selectedElement.getAttribute('width'));
+                    checkHeight = parseFloat(selectedElement.getAttribute('height'));
+                }
+                
+                // Check for collisions before moving
+                if (overlapsWithRunway(newX, newY, checkWidth, checkHeight)) {
+                    return; // Don't move if it would overlap with runway
+                }
+                
+                if (overlapsWithExistingTiles(newX, newY, checkWidth, checkHeight, selectedElement)) {
+                    return; // Don't move if it would overlap with another tile
+                }
                 
                 if (isPolygon) {
                     // Update polygon points based on shape type

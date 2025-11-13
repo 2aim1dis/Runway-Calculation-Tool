@@ -63,6 +63,18 @@ document.addEventListener('DOMContentLoaded', () => {
         updateViewBox();
     });
     
+    // Clear grid button
+    const clearGridBtn = document.getElementById('clear-grid');
+    clearGridBtn.addEventListener('click', () => {
+        // Remove all dropped tiles
+        const droppedTiles = svg.querySelectorAll('.dropped-tile');
+        droppedTiles.forEach(tile => tile.remove());
+        
+        // Clear inventory (keep only the runway)
+        Object.keys(inventory).forEach(key => delete inventory[key]);
+        updateInventory();
+    });
+    
     // Mouse wheel zoom
     svg.addEventListener('wheel', (e) => {
         e.preventDefault();

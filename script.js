@@ -157,7 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
             draggedTileData = {
                 width: parseInt(tile.dataset.width),
                 height: parseInt(tile.dataset.height),
-                title: tile.dataset.tileTitle || `${tile.dataset.width}cm × ${tile.dataset.height}cm`
+                title: tile.dataset.tileTitle || `${tile.dataset.width}cm × ${tile.dataset.height}cm`,
+                isCorner: tile.dataset.tileTitle === 'Ramp Corner'
             };
             e.dataTransfer.effectAllowed = 'copy';
         });
@@ -184,26 +185,40 @@ document.addEventListener('DOMContentLoaded', () => {
         const x = (svgX / svgRect.width) * viewBox.width + viewBox.x;
         const y = (svgY / svgRect.height) * viewBox.height + viewBox.y;
         
-        // Snap to grid (50cm units)
-        const snappedX = Math.round(x / 50) * 50;
-        const snappedY = Math.round(y / 50) * 50;
+        // Snap to grid - use 25cm for corner pieces, 50cm for regular tiles
+        const snapSize = draggedTileData.isCorner ? 25 : 50;
+        const snappedX = Math.round(x / snapSize) * snapSize;
+        const snappedY = Math.round(y / snapSize) * snapSize;
         
-        // Create new tile on grid
-        const newTile = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        newTile.setAttribute('x', snappedX);
-        newTile.setAttribute('y', snappedY);
-        newTile.setAttribute('width', draggedTileData.width);
-        newTile.setAttribute('height', draggedTileData.height);
+        // Create new tile on grid - use polygon for corner, rect for others
+        let newTile;
         
-        // Set color based on tile type: Blue for 100x100, orange for ramps, grey for other tiles
-        let fillColor = '#5a6c7d'; // Default grey
-        if (draggedTileData.width === 100 && draggedTileData.height === 100) {
-            fillColor = '#4a90e2'; // Blue for square tile
-        } else if (draggedTileData.height === 25) {
-            fillColor = '#e8a87c'; // Orange for ramps
+        if (draggedTileData.isCorner) {
+            // Create L-shaped polygon for corner ramp (three 25x25 squares: top-left, top-right, bottom-left)
+            newTile = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            const points = `${snappedX},${snappedY} ${snappedX + 50},${snappedY} ${snappedX + 50},${snappedY + 25} ${snappedX + 25},${snappedY + 25} ${snappedX + 25},${snappedY + 50} ${snappedX},${snappedY + 50}`;
+            newTile.setAttribute('points', points);
+            newTile.setAttribute('fill', '#ffd700');
+            newTile.setAttribute('data-corner-x', snappedX);
+            newTile.setAttribute('data-corner-y', snappedY);
+        } else {
+            // Regular rectangle tile
+            newTile = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            newTile.setAttribute('x', snappedX);
+            newTile.setAttribute('y', snappedY);
+            newTile.setAttribute('width', draggedTileData.width);
+            newTile.setAttribute('height', draggedTileData.height);
+            
+            // Set color based on tile type: Blue for 100x100, orange for ramps, grey for other tiles
+            let fillColor = '#5a6c7d'; // Default grey
+            if (draggedTileData.width === 100 && draggedTileData.height === 100) {
+                fillColor = '#4a90e2'; // Blue for square tile
+            } else if (draggedTileData.height === 25) {
+                fillColor = '#e8a87c'; // Orange for ramps
+            }
+            newTile.setAttribute('fill', fillColor);
         }
         
-        newTile.setAttribute('fill', fillColor);
         newTile.setAttribute('fill-opacity', '0.7');
         newTile.setAttribute('stroke', '#2c3e50');
         newTile.setAttribute('stroke-width', '2');
@@ -234,6 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function makeTileDraggable(tile) {
         let selectedElement = null;
         let offset = null;
+        const isPolygon = tile.tagName === 'polygon';
         
         tile.addEventListener('mousedown', (e) => {
             selectedElement = tile;
@@ -243,10 +259,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const mouseX = (e.clientX - svgRect.left) / svgRect.width * viewBox.width + viewBox.x;
             const mouseY = (e.clientY - svgRect.top) / svgRect.height * viewBox.height + viewBox.y;
             
-            offset = {
-                x: mouseX - parseFloat(tile.getAttribute('x')),
-                y: mouseY - parseFloat(tile.getAttribute('y'))
-            };
+            if (isPolygon) {
+                offset = {
+                    x: mouseX - parseFloat(tile.getAttribute('data-corner-x')),
+                    y: mouseY - parseFloat(tile.getAttribute('data-corner-y'))
+                };
+            } else {
+                offset = {
+                    x: mouseX - parseFloat(tile.getAttribute('x')),
+                    y: mouseY - parseFloat(tile.getAttribute('y'))
+                };
+            }
         });
         
         svg.addEventListener('mousemove', (e) => {
@@ -258,11 +281,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mouseX = (e.clientX - svgRect.left) / svgRect.width * viewBox.width + viewBox.x;
                 const mouseY = (e.clientY - svgRect.top) / svgRect.height * viewBox.height + viewBox.y;
                 
-                const newX = Math.round((mouseX - offset.x) / 50) * 50;
-                const newY = Math.round((mouseY - offset.y) / 50) * 50;
+                // Use 25cm snap for polygons (corners), 50cm for rectangles
+                const snapSize = isPolygon ? 25 : 50;
+                const newX = Math.round((mouseX - offset.x) / snapSize) * snapSize;
+                const newY = Math.round((mouseY - offset.y) / snapSize) * snapSize;
                 
-                selectedElement.setAttribute('x', newX);
-                selectedElement.setAttribute('y', newY);
+                if (isPolygon) {
+                    // Update polygon points for L-shape corner
+                    const points = `${newX},${newY} ${newX + 50},${newY} ${newX + 50},${newY + 25} ${newX + 25},${newY + 25} ${newX + 25},${newY + 50} ${newX},${newY + 50}`;
+                    selectedElement.setAttribute('points', points);
+                    selectedElement.setAttribute('data-corner-x', newX);
+                    selectedElement.setAttribute('data-corner-y', newY);
+                } else {
+                    selectedElement.setAttribute('x', newX);
+                    selectedElement.setAttribute('y', newY);
+                }
             }
         });
         

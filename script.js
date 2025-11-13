@@ -193,7 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
         newTile.setAttribute('y', snappedY);
         newTile.setAttribute('width', draggedTileData.width);
         newTile.setAttribute('height', draggedTileData.height);
-        newTile.setAttribute('fill', draggedTileData.width === 100 && draggedTileData.height === 100 ? '#4a90e2' : '#e74c3c');
+        // Blue for 100x100 square, dark grey for all rectangular tiles
+        newTile.setAttribute('fill', draggedTileData.width === 100 && draggedTileData.height === 100 ? '#4a90e2' : '#5a6c7d');
         newTile.setAttribute('fill-opacity', '0.7');
         newTile.setAttribute('stroke', '#2c3e50');
         newTile.setAttribute('stroke-width', '2');

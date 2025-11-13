@@ -154,6 +154,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const inventoryBody = document.getElementById('inventory-body');
         inventoryBody.innerHTML = '';
         
+        let totalCount = 0;
+        let totalPrice = 0;
+        
         // Always show the runway (permanent fixture)
         const runwayPrice = tilePrices['3D Deltas precut tiles'] || 0;
         const runwayRow = document.createElement('tr');
@@ -164,22 +167,40 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         inventoryBody.appendChild(runwayRow);
         
+        // Add to totals
+        totalCount += 1;
+        totalPrice += runwayPrice;
+        
         // Add dropped tiles dynamically with pricing
         Object.keys(inventory).forEach(key => {
             if (inventory[key] > 0) {
                 const count = inventory[key];
                 const unitPrice = tilePrices[key] || 0;
-                const totalPrice = (count * unitPrice).toFixed(2);
+                const itemTotalPrice = count * unitPrice;
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${key}</td>
                     <td class="count-cell">${count}</td>
-                    <td class="price-cell">€${totalPrice}</td>
+                    <td class="price-cell">€${itemTotalPrice.toFixed(2)}</td>
                 `;
                 inventoryBody.appendChild(row);
+                
+                // Add to totals
+                totalCount += count;
+                totalPrice += itemTotalPrice;
             }
         });
+        
+        // Add total row
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'total-row';
+        totalRow.innerHTML = `
+            <td><strong>Total</strong></td>
+            <td class="count-cell"><strong>${totalCount}</strong></td>
+            <td class="price-cell"><strong>€${totalPrice.toFixed(2)}</strong></td>
+        `;
+        inventoryBody.appendChild(totalRow);
     }
     
     // Handle drag start from palette

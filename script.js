@@ -134,15 +134,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inventory tracking system - stores count of each tile type placed on grid
     const inventory = {};
     
-    // Price mapping for each tile type (in euros)
+    // Price mapping for each tile type (in euros) - Default prices from Runway Items.csv
     const tilePrices = {
-        'Tile 1m × 1m': 25.00,
-        'Tile 1m × 0.5m': 15.00,
-        'Ramp 1m': 30.00,
-        'Ramp 0.5m': 18.00,
-        'Ramp Corner': 22.00,
+        'Tile 1m × 1m': 61.20,
+        'Tile 1m × 0.5m': 32.00,
+        'Ramp 1m': 26.00,
+        'Ramp 0.5m': 14.00,
+        'Ramp Corner': 52.00,
         'Ramp Cut Right': 28.00,
-        'Ramp Cut Left': 28.00
+        'Ramp Cut Left': 28.00,
+        '3D Deltas precut tiles': 160.00  // Sum of Cut tile Left (80) + Cut tile Right (80)
     };
     
     /**
@@ -154,11 +155,12 @@ document.addEventListener('DOMContentLoaded', () => {
         inventoryBody.innerHTML = '';
         
         // Always show the runway (permanent fixture)
+        const runwayPrice = tilePrices['3D Deltas precut tiles'] || 0;
         const runwayRow = document.createElement('tr');
         runwayRow.innerHTML = `
             <td>3D Deltas precut tiles</td>
             <td class="count-cell">1</td>
-            <td class="price-cell">€0.00</td>
+            <td class="price-cell">€${runwayPrice.toFixed(2)}</td>
         `;
         inventoryBody.appendChild(runwayRow);
         
@@ -503,5 +505,98 @@ document.addEventListener('DOMContentLoaded', () => {
     // Log the actual dimensions from the DXF file
     console.log('Runway dimensions: 2000cm x 1000cm');
     console.log('Cleared area: Octagonal shape in center');
+
+    // Price List Upload Functionality
+    const uploadPriceBtn = document.getElementById('upload-price-btn');
+    const priceFileInput = document.getElementById('price-file-input');
+    const priceFileStatus = document.getElementById('price-file-status');
+
+    uploadPriceBtn.addEventListener('click', () => {
+        priceFileInput.click();
+    });
+
+    priceFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.name.endsWith('.csv')) {
+            priceFileStatus.textContent = '❌ Please select a CSV file';
+            priceFileStatus.className = 'file-status error';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const csvContent = event.target.result;
+                parsePriceList(csvContent);
+                priceFileStatus.textContent = `✓ Loaded: ${file.name}`;
+                priceFileStatus.className = 'file-status success';
+                updateInventory(); // Refresh the inventory table with new prices
+            } catch (error) {
+                priceFileStatus.textContent = '❌ Error parsing CSV file';
+                priceFileStatus.className = 'file-status error';
+                console.error('CSV Parse Error:', error);
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    /**
+     * Parse CSV price list and update tilePrices object
+     * Expected format: Name,SKU,Price (ex VAT / without Transport),Stock,Container
+     */
+    function parsePriceList(csvContent) {
+        const lines = csvContent.split('\n');
+        let cutTileLeftPrice = 0;
+        let cutTileRightPrice = 0;
+
+        // Skip header row (index 0), start from index 1
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            // Parse CSV line (handle quoted fields)
+            const parts = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g);
+            if (!parts || parts.length < 3) continue;
+
+            const name = parts[0].replace(/"/g, '').trim();
+            const sku = parts[1].replace(/"/g, '').trim();
+            const priceStr = parts[2].replace(/"/g, '').trim();
+
+            // Extract numeric price (remove €, spaces, and convert comma to dot)
+            const priceMatch = priceStr.match(/[\d,\.]+/);
+            if (!priceMatch) continue;
+            const price = parseFloat(priceMatch[0].replace(',', '.'));
+
+            // Map SKU and name to tile titles
+            if (sku === 'PL.100.01.00' || name.toLowerCase().includes('tile 1m x 1m')) {
+                tilePrices['Tile 1m × 1m'] = price;
+            } else if (name.toLowerCase().includes('tile0,5m x 1m') || name.toLowerCase().includes('0.5m x 1m')) {
+                tilePrices['Tile 1m × 0.5m'] = price;
+            } else if (sku === 'PL.100.04.00' || name.toLowerCase().includes('ramp cut left')) {
+                tilePrices['Ramp Cut Left'] = price;
+            } else if (sku === 'PL.100.06.00' || name.toLowerCase().includes('ramp cut right')) {
+                tilePrices['Ramp Cut Right'] = price;
+            } else if (sku === 'PL.100.05.00' || name.toLowerCase().includes('ramp corner')) {
+                tilePrices['Ramp Corner'] = price;
+            } else if (sku === 'PL.100.07.00' || name.toLowerCase().includes('ramp 1m')) {
+                tilePrices['Ramp 1m'] = price;
+            } else if (sku === 'PL.100.08.00' || name.toLowerCase().includes('ramp 0,5m')) {
+                tilePrices['Ramp 0.5m'] = price;
+            } else if (sku === 'PL.100.02.00' || name.toLowerCase().includes('cut tile left')) {
+                cutTileLeftPrice = price;
+            } else if (sku === 'PL.100.03.00' || name.toLowerCase().includes('cut tile right')) {
+                cutTileRightPrice = price;
+            }
+        }
+
+        // Calculate 3D Deltas precut tiles price (sum of cut tile left + right)
+        if (cutTileLeftPrice > 0 && cutTileRightPrice > 0) {
+            tilePrices['3D Deltas precut tiles'] = cutTileLeftPrice + cutTileRightPrice;
+        }
+
+        console.log('Updated prices:', tilePrices);
+    }
 });
 

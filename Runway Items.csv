@@ -1,0 +1,12 @@
+﻿Name,SKU,Price (ex VAT / without Transport),Stock,Container 15/12
+Tile 1m x 1m,PL.100.01.00,61.20 € ,17,-
+"Tile0,5m x 1m",,32 € ,,60
+Cut tile Left,PL.100.02.00,80 € ,,
+Cut tile Right,PL.100.03.00,80 € ,,
+Ramp Cut Left,PL.100.04.00,28 € ,,
+Ramp Cut Right,PL.100.06.00,28 € ,,
+Ramp Corner,PL.100.05.00,52 € ,7,16
+Ramp 1m,PL.100.07.00,26 € ,35,50
+"Ramp 0,5m",PL.100.08.00,14 € ,,
+,,,,
+,,,,

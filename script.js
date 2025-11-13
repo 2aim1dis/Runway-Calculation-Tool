@@ -119,14 +119,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const paletteTiles = document.querySelectorAll('.palette-tile');
     let draggedTileData = null;
     
-    // Inventory tracking
+    // Inventory tracking system - stores count of each tile type placed on grid
     const inventory = {};
     
+    /**
+     * Updates the inventory table to reflect current tiles on grid
+     * Always shows the runway (3D Deltas) and any dropped tiles with counts
+     */
     function updateInventory() {
         const inventoryBody = document.getElementById('inventory-body');
         inventoryBody.innerHTML = '';
         
-        // Always show the runway
+        // Always show the runway (permanent fixture)
         const runwayRow = document.createElement('tr');
         runwayRow.innerHTML = `
             <td>3D Deltas precut tiles</td>
@@ -134,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         inventoryBody.appendChild(runwayRow);
         
-        // Add dropped tiles
+        // Add dropped tiles dynamically
         Object.keys(inventory).forEach(key => {
             if (inventory[key] > 0) {
                 const row = document.createElement('tr');
@@ -196,16 +200,16 @@ document.addEventListener('DOMContentLoaded', () => {
         newTile.setAttribute('class', 'dropped-tile');
         newTile.style.cursor = 'move';
         
-        // Store tile info for inventory
+        // Store tile info as data attribute for inventory tracking
         const tileName = `${draggedTileData.width}cm × ${draggedTileData.height}cm Tile`;
         newTile.setAttribute('data-tile-name', tileName);
         
-        // Update inventory
+        // Update inventory count - increment or initialize
         if (!inventory[tileName]) {
             inventory[tileName] = 0;
         }
         inventory[tileName]++;
-        updateInventory();
+        updateInventory(); // Refresh the table display
         
         // Make dropped tiles draggable
         makeTileDraggable(newTile);
@@ -257,17 +261,20 @@ document.addEventListener('DOMContentLoaded', () => {
             offset = null;
         });
         
-        // Double click to delete
+        // Double click to delete tile and update inventory
         tile.addEventListener('dblclick', () => {
-            // Update inventory before removing
+            // Retrieve tile name from data attribute
             const tileName = tile.getAttribute('data-tile-name');
             if (tileName && inventory[tileName]) {
+                // Decrement count in inventory
                 inventory[tileName]--;
+                // Remove from inventory object if count reaches zero
                 if (inventory[tileName] <= 0) {
                     delete inventory[tileName];
                 }
-                updateInventory();
+                updateInventory(); // Refresh the table display
             }
+            // Remove tile from SVG
             tile.remove();
         });
     }

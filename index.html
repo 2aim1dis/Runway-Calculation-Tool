@@ -7,7 +7,32 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <div class="main-container">
+        <!-- Tile Palette -->
+        <div class="tile-palette">
+            <h3>Available Tiles</h3>
+            <div class="palette-section">
+                <h4>100cm × 100cm</h4>
+                <div class="palette-tile" draggable="true" data-width="100" data-height="100">
+                    <svg width="60" height="60" viewBox="0 0 100 100">
+                        <rect x="5" y="5" width="90" height="90" fill="#4a90e2" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="50" y="55" text-anchor="middle" font-size="14" fill="white" font-weight="bold">100×100</text>
+                    </svg>
+                </div>
+            </div>
+            <div class="palette-section">
+                <h4>100cm × 50cm</h4>
+                <div class="palette-tile" draggable="true" data-width="100" data-height="50">
+                    <svg width="60" height="30" viewBox="0 0 100 50">
+                        <rect x="5" y="5" width="90" height="40" fill="#e74c3c" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="50" y="30" text-anchor="middle" font-size="14" fill="white" font-weight="bold">100×50</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Grid Container -->
+        <div class="container">
         <svg id="runway-svg" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
             <!-- Grid lines (50cm x 50cm = 50 units) -->
             <defs>
@@ -150,6 +175,7 @@
                 <line x1="300" y1="0" x2="300" y2="300" />
             </g>
         </svg>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>

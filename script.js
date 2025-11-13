@@ -158,7 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 width: parseInt(tile.dataset.width),
                 height: parseInt(tile.dataset.height),
                 title: tile.dataset.tileTitle || `${tile.dataset.width}cm × ${tile.dataset.height}cm`,
-                isCorner: tile.dataset.tileTitle === 'Ramp Corner'
+                isCorner: tile.dataset.tileTitle === 'Ramp Corner',
+                cutType: tile.dataset.cutType || null
             };
             e.dataTransfer.effectAllowed = 'copy';
         });
@@ -190,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const snappedX = Math.round(x / snapSize) * snapSize;
         const snappedY = Math.round(y / snapSize) * snapSize;
         
-        // Create new tile on grid - use polygon for corner, rect for others
+        // Create new tile on grid - use polygon for corner and angled cuts, rect for others
         let newTile;
         
         if (draggedTileData.isCorner) {
@@ -201,6 +202,25 @@ document.addEventListener('DOMContentLoaded', () => {
             newTile.setAttribute('fill', '#ffd700');
             newTile.setAttribute('data-corner-x', snappedX);
             newTile.setAttribute('data-corner-y', snappedY);
+            newTile.setAttribute('data-shape-type', 'corner');
+        } else if (draggedTileData.cutType) {
+            // Create angled ramp with 45-degree cut (100cm x 25cm)
+            newTile = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            let points;
+            if (draggedTileData.cutType === 'right') {
+                // Right cut: angled cut on the right side
+                points = `${snappedX},${snappedY} ${snappedX + 100},${snappedY} ${snappedX + 75},${snappedY + 25} ${snappedX},${snappedY + 25}`;
+            } else {
+                // Left cut: angled cut on the left side
+                points = `${snappedX},${snappedY} ${snappedX + 100},${snappedY} ${snappedX + 100},${snappedY + 25} ${snappedX + 25},${snappedY + 25}`;
+            }
+            newTile.setAttribute('points', points);
+            newTile.setAttribute('fill', '#90ee90'); // Light green
+            newTile.setAttribute('data-corner-x', snappedX);
+            newTile.setAttribute('data-corner-y', snappedY);
+            newTile.setAttribute('data-shape-type', draggedTileData.cutType);
+            newTile.setAttribute('data-width', draggedTileData.width);
+            newTile.setAttribute('data-height', draggedTileData.height);
         } else {
             // Regular rectangle tile
             newTile = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -287,8 +307,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newY = Math.round((mouseY - offset.y) / snapSize) * snapSize;
                 
                 if (isPolygon) {
-                    // Update polygon points for L-shape corner
-                    const points = `${newX},${newY} ${newX + 50},${newY} ${newX + 50},${newY + 25} ${newX + 25},${newY + 25} ${newX + 25},${newY + 50} ${newX},${newY + 50}`;
+                    // Update polygon points based on shape type
+                    const shapeType = selectedElement.getAttribute('data-shape-type');
+                    let points;
+                    
+                    if (shapeType === 'corner') {
+                        // L-shape corner
+                        points = `${newX},${newY} ${newX + 50},${newY} ${newX + 50},${newY + 25} ${newX + 25},${newY + 25} ${newX + 25},${newY + 50} ${newX},${newY + 50}`;
+                    } else if (shapeType === 'right') {
+                        // Right cut ramp
+                        points = `${newX},${newY} ${newX + 100},${newY} ${newX + 75},${newY + 25} ${newX},${newY + 25}`;
+                    } else if (shapeType === 'left') {
+                        // Left cut ramp
+                        points = `${newX},${newY} ${newX + 100},${newY} ${newX + 100},${newY + 25} ${newX + 25},${newY + 25}`;
+                    }
+                    
                     selectedElement.setAttribute('points', points);
                     selectedElement.setAttribute('data-corner-x', newX);
                     selectedElement.setAttribute('data-corner-y', newY);
@@ -325,28 +358,100 @@ document.addEventListener('DOMContentLoaded', () => {
         tile.addEventListener('contextmenu', (e) => {
             e.preventDefault(); // Prevent browser context menu
             
-            // Get current dimensions
-            const currentWidth = parseFloat(tile.getAttribute('width'));
-            const currentHeight = parseFloat(tile.getAttribute('height'));
-            const currentX = parseFloat(tile.getAttribute('x'));
-            const currentY = parseFloat(tile.getAttribute('y'));
-            
-            // Swap width and height for 90-degree rotation
-            tile.setAttribute('width', currentHeight);
-            tile.setAttribute('height', currentWidth);
-            
-            // Adjust position to keep tile centered after rotation
-            // Calculate center point before rotation
-            const centerX = currentX + currentWidth / 2;
-            const centerY = currentY + currentHeight / 2;
-            
-            // Calculate new top-left position to maintain center
-            const newX = centerX - currentHeight / 2;
-            const newY = centerY - currentWidth / 2;
-            
-            // Snap to grid
-            tile.setAttribute('x', Math.round(newX / 50) * 50);
-            tile.setAttribute('y', Math.round(newY / 50) * 50);
+            if (isPolygon) {
+                // Handle polygon rotation
+                const shapeType = tile.getAttribute('data-shape-type');
+                const currentX = parseFloat(tile.getAttribute('data-corner-x'));
+                const currentY = parseFloat(tile.getAttribute('data-corner-y'));
+                
+                if (shapeType === 'corner') {
+                    // Rotate L-shape corner through 4 orientations
+                    const currentRotation = parseInt(tile.getAttribute('data-rotation') || '0');
+                    const newRotation = (currentRotation + 90) % 360;
+                    tile.setAttribute('data-rotation', newRotation);
+                    
+                    let points;
+                    if (newRotation === 0) {
+                        // Default: top-left, top-right, bottom-left
+                        points = `${currentX},${currentY} ${currentX + 50},${currentY} ${currentX + 50},${currentY + 25} ${currentX + 25},${currentY + 25} ${currentX + 25},${currentY + 50} ${currentX},${currentY + 50}`;
+                    } else if (newRotation === 90) {
+                        // 90°: top-left, top-right, bottom-right
+                        points = `${currentX},${currentY} ${currentX + 50},${currentY} ${currentX + 50},${currentY + 50} ${currentX + 25},${currentY + 50} ${currentX + 25},${currentY + 25} ${currentX},${currentY + 25}`;
+                    } else if (newRotation === 180) {
+                        // 180°: top-right, bottom-left, bottom-right
+                        points = `${currentX + 25},${currentY} ${currentX + 50},${currentY} ${currentX + 50},${currentY + 50} ${currentX},${currentY + 50} ${currentX},${currentY + 25} ${currentX + 25},${currentY + 25}`;
+                    } else {
+                        // 270°: top-left, bottom-left, bottom-right
+                        points = `${currentX},${currentY} ${currentX + 25},${currentY} ${currentX + 25},${currentY + 25} ${currentX + 50},${currentY + 25} ${currentX + 50},${currentY + 50} ${currentX},${currentY + 50}`;
+                    }
+                    tile.setAttribute('points', points);
+                    
+                } else if (shapeType === 'right' || shapeType === 'left') {
+                    // Rotate angled ramp through 4 orientations
+                    const currentRotation = parseInt(tile.getAttribute('data-rotation') || '0');
+                    const newRotation = (currentRotation + 90) % 360;
+                    tile.setAttribute('data-rotation', newRotation);
+                    
+                    const width = parseFloat(tile.getAttribute('data-width'));
+                    const height = parseFloat(tile.getAttribute('data-height'));
+                    let points;
+                    
+                    if (shapeType === 'right') {
+                        if (newRotation === 0) {
+                            // Horizontal, cut on right
+                            points = `${currentX},${currentY} ${currentX + width},${currentY} ${currentX + width - height},${currentY + height} ${currentX},${currentY + height}`;
+                        } else if (newRotation === 90) {
+                            // Vertical, cut on bottom
+                            points = `${currentX},${currentY} ${currentX + height},${currentY} ${currentX + height},${currentY + width - height} ${currentX},${currentY + width}`;
+                        } else if (newRotation === 180) {
+                            // Horizontal flipped, cut on left
+                            points = `${currentX + height},${currentY} ${currentX + width},${currentY} ${currentX + width},${currentY + height} ${currentX},${currentY + height}`;
+                        } else {
+                            // Vertical flipped, cut on top
+                            points = `${currentX},${currentY + height} ${currentX + height},${currentY} ${currentX + height},${currentY + width} ${currentX},${currentY + width}`;
+                        }
+                    } else { // left
+                        if (newRotation === 0) {
+                            // Horizontal, cut on left
+                            points = `${currentX},${currentY} ${currentX + width},${currentY} ${currentX + width},${currentY + height} ${currentX + height},${currentY + height}`;
+                        } else if (newRotation === 90) {
+                            // Vertical, cut on top
+                            points = `${currentX},${currentY + height} ${currentX + height},${currentY} ${currentX + height},${currentY + width} ${currentX},${currentY + width}`;
+                        } else if (newRotation === 180) {
+                            // Horizontal flipped, cut on right
+                            points = `${currentX},${currentY} ${currentX + width - height},${currentY} ${currentX + width},${currentY + height} ${currentX},${currentY + height}`;
+                        } else {
+                            // Vertical flipped, cut on bottom
+                            points = `${currentX},${currentY} ${currentX + height},${currentY} ${currentX + height},${currentY + width - height} ${currentX},${currentY + width}`;
+                        }
+                    }
+                    tile.setAttribute('points', points);
+                }
+                
+            } else {
+                // Handle rectangle rotation (existing code)
+                const currentWidth = parseFloat(tile.getAttribute('width'));
+                const currentHeight = parseFloat(tile.getAttribute('height'));
+                const currentX = parseFloat(tile.getAttribute('x'));
+                const currentY = parseFloat(tile.getAttribute('y'));
+                
+                // Swap width and height for 90-degree rotation
+                tile.setAttribute('width', currentHeight);
+                tile.setAttribute('height', currentWidth);
+                
+                // Adjust position to keep tile centered after rotation
+                // Calculate center point before rotation
+                const centerX = currentX + currentWidth / 2;
+                const centerY = currentY + currentHeight / 2;
+                
+                // Calculate new top-left position to maintain center
+                const newX = centerX - currentHeight / 2;
+                const newY = centerY - currentWidth / 2;
+                
+                // Snap to grid
+                tile.setAttribute('x', Math.round(newX / 50) * 50);
+                tile.setAttribute('y', Math.round(newY / 50) * 50);
+            }
         });
     }
     

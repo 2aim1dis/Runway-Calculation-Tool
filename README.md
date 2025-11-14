@@ -1,6 +1,6 @@
-# Web App
+# Runway Calculation Tool
 
-A simple web application workspace with git version control.
+Interactive tile placement and calculation system for runway configurations.
 
 ## Project Structure
 

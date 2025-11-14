@@ -75,6 +75,43 @@ document.addEventListener('DOMContentLoaded', () => {
         updateInventory();
     });
     
+    // Export grid as image
+    const exportGridBtn = document.getElementById('export-grid');
+    exportGridBtn.addEventListener('click', () => {
+        // Get the SVG element
+        const svgElement = document.getElementById('runway-svg');
+        const svgData = new XMLSerializer().serializeToString(svgElement);
+        
+        // Create a canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size to match SVG
+        const bbox = svgElement.getBoundingClientRect();
+        canvas.width = 2400;  // High resolution
+        canvas.height = 2400;
+        
+        // Create an image from SVG
+        const img = new Image();
+        const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(url);
+            
+            // Download the image
+            canvas.toBlob((blob) => {
+                const link = document.createElement('a');
+                link.download = `runway-layout-${new Date().toISOString().slice(0,10)}.png`;
+                link.href = URL.createObjectURL(blob);
+                link.click();
+            });
+        };
+        
+        img.src = url;
+    });
+    
     // Square Meter Calculator functionality
     const calcToggleBtn = document.getElementById('calc-toggle-btn');
     const calcPanel = document.getElementById('calc-panel');

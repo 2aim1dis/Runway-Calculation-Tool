@@ -112,6 +112,38 @@ document.addEventListener('DOMContentLoaded', () => {
         img.src = url;
     });
     
+    // Export Excel functionality
+    const exportExcelBtn = document.getElementById('export-excel-btn');
+    exportExcelBtn.addEventListener('click', () => {
+        // Get inventory data
+        const csvRows = [];
+        
+        // Add headers
+        csvRows.push(['Object', 'Count', 'Price'].join(','));
+        
+        // Add data rows
+        for (const [name, count] of Object.entries(inventory)) {
+            const price = (prices[name] || 0) * count;
+            csvRows.push([name, count, price.toFixed(2)].join(','));
+        }
+        
+        // Add totals row
+        const totalCount = Object.values(inventory).reduce((sum, count) => sum + count, 0);
+        const totalPrice = Object.entries(inventory).reduce((sum, [name, count]) => 
+            sum + (prices[name] || 0) * count, 0);
+        csvRows.push(['Total', totalCount, totalPrice.toFixed(2)].join(','));
+        
+        // Create CSV content
+        const csvContent = csvRows.join('\n');
+        
+        // Create blob and download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.download = `inventory-${new Date().toISOString().slice(0,10)}.csv`;
+        link.href = URL.createObjectURL(blob);
+        link.click();
+    });
+    
     // Square Meter Calculator functionality
     const calcToggleBtn = document.getElementById('calc-toggle-btn');
     const calcPanel = document.getElementById('calc-panel');

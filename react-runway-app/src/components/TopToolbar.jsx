@@ -29,7 +29,7 @@ export const TopToolbar = () => {
       </div>
       <div className="toolbar-title">
         <h1>Runway Calculation Tool</h1>
-        <span className="version-badge">v1.3</span>
+        <span className="version-badge">React v1.3</span>
       </div>
       <div className="toolbar-calculator">
         <div className="preset-dropdown">

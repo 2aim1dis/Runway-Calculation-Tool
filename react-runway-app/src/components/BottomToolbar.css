@@ -1,0 +1,68 @@
+.bottom-toolbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: #2c3e50;
+    border-top: 2px solid #1a252f;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 15px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.toolbar-btn {
+    background: #4a90e2;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.toolbar-btn:hover {
+    background: #357abd;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+}
+
+.toolbar-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(74, 144, 226, 0.2);
+}
+
+.file-status {
+    color: #ecf0f1;
+    font-size: 13px;
+    font-style: italic;
+}
+
+.file-status.success {
+    color: #2ecc71;
+    font-weight: 500;
+}
+
+.file-status.error {
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+.version-indicator {
+    color: white;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+}

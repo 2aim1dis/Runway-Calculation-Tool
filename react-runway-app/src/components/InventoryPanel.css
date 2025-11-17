@@ -1,0 +1,133 @@
+.inventory-panel {
+    background: linear-gradient(180deg,#f8fafc,#eef2f5);
+    padding: 16px 24px 24px;
+    border-left: 2px solid #e1e5ea;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.inventory-panel h3 {
+    margin: 0 0 16px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
+    letter-spacing: .5px;
+}
+
+.inventory-table-wrapper {
+    position: relative;
+    flex: 1;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+.inventory-table {
+    width: 100%;
+    background: #ffffff;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    font-size: 14px;
+}
+
+.inventory-table thead {
+    background: linear-gradient(135deg,#4a90e2,#357abd);
+    color: #ffffff;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.inventory-table th,
+.inventory-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #e1e5ea;
+}
+
+.inventory-table th {
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: .3px;
+}
+
+.inventory-table td {
+    font-size: 13px;
+    color: #2f3a44;
+}
+
+.inventory-table tbody tr:hover {
+    background: #f5faff;
+}
+
+.inventory-table tbody tr:nth-child(even) {
+    background: #fafcff;
+}
+
+.inventory-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.inventory-table .count-cell {
+    text-align: center;
+    font-weight: 600;
+    color: #2368b0;
+}
+
+.inventory-table .price-cell {
+    text-align: right;
+    font-weight: bold;
+    color: #27ae60;
+    padding-right: 12px;
+}
+
+.inventory-table .total-row {
+    border-top: 2px solid #2c3e50;
+    background: #f8f9fa;
+}
+
+.inventory-table .total-row td {
+    padding-top: 12px;
+    padding-bottom: 8px;
+    font-size: 15px;
+}
+
+.inventory-table .total-row .count-cell {
+    color: #2c3e50;
+}
+
+.inventory-table .total-row .price-cell {
+    color: #2c3e50;
+}
+
+.export-excel-btn {
+    background: linear-gradient(135deg,#2ecc71,#27ae60);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(46,204,113,0.2);
+    min-width: 38px;
+    height: 38px;
+}
+
+.export-excel-btn:hover {
+    background: linear-gradient(135deg,#27ae60,#229954);
+    box-shadow: 0 3px 8px rgba(46,204,113,0.3);
+    transform: translateY(-1px);
+}
+
+.export-excel-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(46,204,113,0.2);
+}

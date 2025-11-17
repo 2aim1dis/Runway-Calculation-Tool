@@ -1,0 +1,111 @@
+.container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    position: relative;
+    background: #ffffff;
+    padding: 12px 0;
+}
+
+.svg-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+#runway-svg {
+    display: block;
+    width: 92%;
+    height: auto;
+    border: 1px solid #d7dfe6;
+    background: #ffffff;
+    border-radius: 12px;
+    cursor: grab;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+
+#runway-svg:active {
+    cursor: grabbing;
+}
+
+.zoom-controls {
+    position: absolute;
+    top: 18px;
+    right: 24px;
+    display: flex;
+    gap: 12px;
+    z-index: 10;
+}
+
+.zoom-btn {
+    width: 35px;
+    height: 35px;
+    border: 2px solid #4a90e2;
+    background: #ffffff;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2368b0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .25s ease, color .25s ease, transform .25s ease, box-shadow .25s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+.zoom-btn:hover {
+    background: #4a90e2;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74,144,226,0.35);
+}
+
+.zoom-btn:active {
+    transform: scale(.92);
+    box-shadow: 0 2px 6px rgba(74,144,226,0.35);
+}
+
+.grid-instruction {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: #64748b;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e1e5ea;
+    font-style: italic;
+    z-index: 5;
+}
+
+.dropped-tile {
+    cursor: grab !important;
+    transition: opacity 0.1s ease;
+}
+
+.dropped-tile:active {
+    cursor: grabbing !important;
+}
+
+.dropped-tile:hover rect,
+.dropped-tile:hover path {
+    stroke-width: 3;
+    filter: brightness(1.1);
+}
+
+.dropped-tile rect[fill="transparent"] {
+    pointer-events: all;
+    cursor: grab;
+}
+
+.dropped-tile:active rect[fill="transparent"] {
+    cursor: grabbing;
+}

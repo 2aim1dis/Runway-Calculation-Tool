@@ -3,7 +3,7 @@ import { useRunway } from '../context/RunwayContext';
 import './RunwayGrid.css';
 
 export const RunwayGrid = () => {
-  const { tiles, viewBox, addTile, removeTile, updateTile, zoomIn, zoomOut, resetZoom, clearGrid } = useRunway();
+  const { tiles, viewBox, addTile, updateTile, zoomIn, zoomOut, resetZoom, clearGrid } = useRunway();
   const svgRef = useRef(null);
   const [draggingTile, setDraggingTile] = useState(null);
   const dragStartPos = useRef({ x: 0, y: 0 });

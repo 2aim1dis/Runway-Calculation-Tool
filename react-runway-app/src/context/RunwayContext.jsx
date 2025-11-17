@@ -1,14 +1,7 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback } from 'react';
 
 const RunwayContext = createContext();
-
-export const useRunway = () => {
-  const context = useContext(RunwayContext);
-  if (!context) {
-    throw new Error('useRunway must be used within a RunwayProvider');
-  }
-  return context;
-};
 
 export const RunwayProvider = ({ children }) => {
   const [tiles, setTiles] = useState([]);
@@ -17,12 +10,25 @@ export const RunwayProvider = ({ children }) => {
   const [viewBox, setViewBox] = useState({ x: 0, y: 0, width: 1200, height: 1200 });
   const [calcPanelOpen, setCalcPanelOpen] = useState(false);
 
+  const updateInventory = useCallback((type, delta) => {
+    setInventory(prev => {
+      const nextValue = (prev[type] || 0) + delta;
+      if (nextValue <= 0) {
+        const { [type]: _removed, ...rest } = prev;
+        return rest;
+      }
+      return {
+        ...prev,
+        [type]: nextValue
+      };
+    });
+  }, []);
+
   const addTile = useCallback((tile) => {
     const newTile = { ...tile, id: Date.now() + Math.random() };
     setTiles(prev => [...prev, newTile]);
-    // Use title as the type for inventory tracking
     updateInventory(tile.title, 1);
-  }, []);
+  }, [updateInventory]);
 
   const removeTile = useCallback((tileId) => {
     setTiles(prev => {
@@ -32,7 +38,7 @@ export const RunwayProvider = ({ children }) => {
       }
       return prev.filter(t => t.id !== tileId);
     });
-  }, []);
+  }, [updateInventory]);
 
   const updateTile = useCallback((tileId, updates) => {
     setTiles(prev => prev.map(t => t.id === tileId ? { ...t, ...updates } : t));
@@ -42,13 +48,6 @@ export const RunwayProvider = ({ children }) => {
     setTiles([]);
     setInventory({});
   }, []);
-
-  const updateInventory = (type, delta) => {
-    setInventory(prev => ({
-      ...prev,
-      [type]: (prev[type] || 0) + delta
-    }));
-  };
 
   const zoomIn = useCallback(() => {
     const newZoom = zoom * 1.2;
@@ -135,4 +134,12 @@ export const RunwayProvider = ({ children }) => {
       {children}
     </RunwayContext.Provider>
   );
+};
+
+export const useRunway = () => {
+  const context = useContext(RunwayContext);
+  if (!context) {
+    throw new Error('useRunway must be used within a RunwayProvider');
+  }
+  return context;
 };
